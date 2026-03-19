@@ -8,14 +8,14 @@ import (
 	fmt "github.com/jhunt/go-ansi"
 )
 
-func registerHelpCommands(r *app.Runner, opt *Options, version string) {
+func registerHelpCommands(r *app.Runner, opt *Options, version string, revision string) {
 	r.Dispatch("version", &app.Help{
 		Summary: "Print the version of the vault-manager CLI",
 		Usage:   "vault-manager version",
 		Type:    app.AdministrativeCommand,
 	}, func(command string, args ...string) error {
 		if version != "" {
-			fmt.Fprintf(os.Stderr, "vault-manager v%s\n", version)
+			fmt.Fprintf(os.Stderr, "vault-manager v%s(%s)\n", version, revision)
 		} else {
 			fmt.Fprintf(os.Stderr, "vault-manager (development build)\n")
 		}

@@ -3,8 +3,8 @@ package cmd
 import "github.com/SomeBlackMagic/vault-manager/app"
 
 // RegisterAll registers all CLI commands with the runner.
-func RegisterAll(r *app.Runner, opt *Options, version string) {
-	registerHelpCommands(r, opt, version)
+func RegisterAll(r *app.Runner, opt *Options, version string, revision string) {
+	registerHelpCommands(r, opt, version, revision)
 	registerTargetCommands(r, opt)
 	registerAuthCommands(r, opt)
 	registerSecretCommands(r, opt)
