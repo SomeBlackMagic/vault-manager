@@ -4,22 +4,19 @@ import (
 	"errors"
 	"os"
 
-	"github.com/SomeBlackMagic/vault-manager/app"
-	"github.com/SomeBlackMagic/vault-manager/cmd"
-	"github.com/SomeBlackMagic/vault-manager/rc"
 	fmt "github.com/jhunt/go-ansi"
 	"github.com/jhunt/go-cli"
 	env "github.com/jhunt/go-envirotron"
+	"github.com/SomeBlackMagic/vault-manager/app"
+	"github.com/SomeBlackMagic/vault-manager/cmd"
+	"github.com/SomeBlackMagic/vault-manager/rc"
 )
 
-// Version is set at build time via -ldflags "-X main.Version=...".
+// Version and Revision are set at build time via -ldflags "-X main.Version=... -X main.Revision=...".
 // This is the standard Go practice for CLI build-time variables and is exempt
 // from the global variable prohibition.
-// version and revision are set at build time via -ldflags.
-var (
-	version  = "dev"
-	revision = "unknown"
-)
+var Version string
+var Revision string
 
 func main() {
 	opt := cmd.NewOptions()
@@ -28,7 +25,7 @@ func main() {
 
 	r := app.NewRunner()
 
-	cmd.RegisterAll(r, opt, version, revision)
+	cmd.RegisterAll(r, opt, Version, Revision)
 
 	env.Override(opt)
 	p, err := cli.NewParser(opt, os.Args[1:])

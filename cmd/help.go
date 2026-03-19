@@ -15,7 +15,11 @@ func registerHelpCommands(r *app.Runner, opt *Options, version string, revision 
 		Type:    app.AdministrativeCommand,
 	}, func(command string, args ...string) error {
 		if version != "" {
-			fmt.Fprintf(os.Stderr, "vault-manager v%s(%s)\n", version, revision)
+			if revision != "" {
+				fmt.Fprintf(os.Stderr, "vault-manager v%s (revision: %s)\n", version, revision)
+			} else {
+				fmt.Fprintf(os.Stderr, "vault-manager v%s\n", version)
+			}
 		} else {
 			fmt.Fprintf(os.Stderr, "vault-manager (development build)\n")
 		}
