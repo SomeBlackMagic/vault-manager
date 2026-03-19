@@ -1,9 +1,10 @@
 package vaultsync
 
 import (
-	"fmt"
 	"sort"
 	"strings"
+
+	fmt "github.com/jhunt/go-ansi"
 )
 
 // ComputeChanges compares local state vs remote state and returns a ChangeSet.
