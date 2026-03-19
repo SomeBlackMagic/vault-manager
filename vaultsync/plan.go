@@ -26,8 +26,11 @@ func Plan(v VaultAccessor, vaultPath, localDir string) (ChangeSet, error) {
 	// Compute changes
 	cs := ComputeChanges(localSecrets, remoteMap)
 
-	// Print diff
+	// Print diff (skip unchanged)
 	for _, c := range cs.Changes {
+		if c.Type == ChangeNone {
+			continue
+		}
 		fmt.Fprintf(os.Stderr, "%s", FormatDiff(c))
 	}
 

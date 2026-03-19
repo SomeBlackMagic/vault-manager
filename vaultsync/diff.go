@@ -149,11 +149,15 @@ func formatKeyDiff(key string, oldVal, newVal interface{}) string {
 			} else if fc.NewValue == nil {
 				sb.WriteString(fmt.Sprintf("        @R{- %s}: %s\n", fc.Path, formatValue(fc.OldValue)))
 			} else {
-				sb.WriteString(fmt.Sprintf("        @Y{~ %s}: %s => %s\n", fc.Path, formatValue(fc.OldValue), formatValue(fc.NewValue)))
+				sb.WriteString(fmt.Sprintf("        @Y{~ %s}:\n", fc.Path))
+				sb.WriteString(fmt.Sprintf("            @R{- %s}\n", formatValue(fc.OldValue)))
+				sb.WriteString(fmt.Sprintf("            @G{+ %s}\n", formatValue(fc.NewValue)))
 			}
 		}
 	} else {
-		sb.WriteString(fmt.Sprintf("    @Y{~ %s}: %s => %s\n", key, formatValue(oldVal), formatValue(newVal)))
+		sb.WriteString(fmt.Sprintf("    @Y{~ %s}:\n", key))
+		sb.WriteString(fmt.Sprintf("        @R{- %s}\n", formatValue(oldVal)))
+		sb.WriteString(fmt.Sprintf("        @G{+ %s}\n", formatValue(newVal)))
 	}
 
 	return sb.String()
@@ -162,7 +166,7 @@ func formatKeyDiff(key string, oldVal, newVal interface{}) string {
 // FormatChangeSummary returns "Plan: X to add, Y to change, Z to destroy."
 func FormatChangeSummary(cs ChangeSet) string {
 	adds, modifies, deletes := cs.Counts()
-	return fmt.Sprintf("Plan: @G{%d} to add, @Y{%d} to change, @R{%d} to destroy.", adds, modifies, deletes)
+	return fmt.Sprintf("Plan: @G{%d to add}, @Y{%d to change}, @R{%d to destroy}.", adds, modifies, deletes)
 }
 
 func sortedKeys(m map[string]interface{}) []string {
