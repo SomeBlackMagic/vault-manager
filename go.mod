@@ -1,4 +1,4 @@
-module github.com/SomeBlackMagic/vault-cli-manager
+module github.com/SomeBlackMagic/vault-manager
 
 go 1.24.0
 

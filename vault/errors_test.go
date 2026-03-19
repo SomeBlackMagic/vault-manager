@@ -5,7 +5,7 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/SomeBlackMagic/vault-cli-manager/vault"
+	"github.com/SomeBlackMagic/vault-manager/vault"
 )
 
 var _ = Describe("Errors", func() {

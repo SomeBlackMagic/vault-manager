@@ -2,9 +2,9 @@
 
 ## Overview
 
-This document describes a phased upgrade plan for the `safe` CLI application (vault-cli-manager). The current state:
+This document describes a phased upgrade plan for the `vault-manager` CLI application. The current state:
 
-- **Language**: Go 1.14, module `github.com/starkandwayne/safe`
+- **Language**: Go 1.14, module `github.com/SomeBlackMagic/vault-manager`
 - **Structure**: Monolithic — `main.go` (4,484 lines, 45 commands), `vault/vault.go` (1,151 lines)
 - **Tests**: Only `vault/utils_test.go` (125 lines). Bash integration tests (3,407 lines) in `tests` file
 - **Dependencies**: Outdated (2016–2020 era), 20 deprecated `ioutil` calls, deprecated `ssh/terminal`, `x509.ParseCRL`
@@ -215,35 +215,35 @@ Phase 2 must be complete (split files make deprecation fixes easier to locate)
 ## Phase 4: Rename Package
 
 ### Goal
-Rename Go module from `github.com/starkandwayne/safe` to `github.com/SomeBlackMagic/vault-cli-manager`.
+Rename Go module from `github.com/SomeBlackMagic/vault-manager` to `github.com/SomeBlackMagic/vault-manager`.
 
 ### 4.1 Files to Modify
 
 **`go.mod`** (line 1):
 ```
-- module github.com/starkandwayne/safe
-+ module github.com/SomeBlackMagic/vault-cli-manager
+- module github.com/SomeBlackMagic/vault-manager
++ module github.com/SomeBlackMagic/vault-manager
 ```
 
 **Go source files** — update all internal imports (6 occurrences in 5 files):
 
 | File | Old Import | New Import |
 |------|-----------|------------|
-| `main.go:36` | `github.com/starkandwayne/safe/prompt` | `github.com/SomeBlackMagic/vault-cli-manager/prompt` |
-| `main.go:37` | `github.com/starkandwayne/safe/rc` | `github.com/SomeBlackMagic/vault-cli-manager/rc` |
-| `main.go:38` | `github.com/starkandwayne/safe/vault` | `github.com/SomeBlackMagic/vault-cli-manager/vault` |
-| `ui.go:12` | `github.com/starkandwayne/safe/prompt` | `github.com/SomeBlackMagic/vault-cli-manager/prompt` |
-| `vault/rekey.go:11` | `github.com/starkandwayne/safe/prompt` | `github.com/SomeBlackMagic/vault-cli-manager/prompt` |
-| `vault/utils_test.go:6` | `github.com/starkandwayne/safe/vault` | `github.com/SomeBlackMagic/vault-cli-manager/vault` |
+| `main.go:36` | `github.com/SomeBlackMagic/vault-manager/prompt` | `github.com/SomeBlackMagic/vault-manager/prompt` |
+| `main.go:37` | `github.com/SomeBlackMagic/vault-manager/rc` | `github.com/SomeBlackMagic/vault-manager/rc` |
+| `main.go:38` | `github.com/SomeBlackMagic/vault-manager/vault` | `github.com/SomeBlackMagic/vault-manager/vault` |
+| `ui.go:12` | `github.com/SomeBlackMagic/vault-manager/prompt` | `github.com/SomeBlackMagic/vault-manager/prompt` |
+| `vault/rekey.go:11` | `github.com/SomeBlackMagic/vault-manager/prompt` | `github.com/SomeBlackMagic/vault-manager/prompt` |
+| `vault/utils_test.go:6` | `github.com/SomeBlackMagic/vault-manager/vault` | `github.com/SomeBlackMagic/vault-manager/vault` |
 
 **New test files from Phase 1** will also need the new module path (write them with the new path if Phase 4 is done first, or update after).
 
-**Non-Go files**: No references to `github.com/starkandwayne/safe` found in README.md, Makefile, CI configs, or other non-Go files.
+**Non-Go files**: No references to `github.com/SomeBlackMagic/vault-manager` found in README.md, Makefile, CI configs, or other non-Go files.
 
 ### 4.2 Step-by-Step Process
 
 1. Update `module` directive in `go.mod`
-2. Find-and-replace `github.com/starkandwayne/safe` → `github.com/SomeBlackMagic/vault-cli-manager` across all `.go` files
+2. Find-and-replace `github.com/SomeBlackMagic/vault-manager` → `github.com/SomeBlackMagic/vault-manager` across all `.go` files
 3. Run `go mod tidy`
 4. Verify build: `go build .`
 5. Verify tests: `go test ./...`
@@ -339,7 +339,7 @@ local-dir/
 
 ### 5.4 New Commands
 
-#### `safe sync pull <vault-path> <local-dir>`
+#### `vault-manager sync pull <vault-path> <local-dir>`
 
 Downloads secrets from Vault to local JSON files.
 
@@ -351,7 +351,7 @@ Downloads secrets from Vault to local JSON files.
    - `(s)` Skip
 4. Write JSON file or skip based on user choice
 
-#### `safe sync plan <vault-path> <local-dir>`
+#### `vault-manager sync plan <vault-path> <local-dir>`
 
 Shows what would change (like `terraform plan`).
 
@@ -364,7 +364,7 @@ Shows what would change (like `terraform plan`).
    - `  secret/app/same` — identical (no change)
 4. Summary line: `"Plan: 3 to add, 1 to change, 2 to destroy."`
 
-#### `safe sync apply <vault-path> <local-dir>`
+#### `vault-manager sync apply <vault-path> <local-dir>`
 
 Applies local state to Vault (destructive).
 
@@ -425,9 +425,9 @@ go build .
 go test ./sync/...
 go test ./...
 # Manual testing with a Vault instance:
-safe sync pull secret/ ./local-secrets
-safe sync plan secret/ ./local-secrets
-safe sync apply secret/ ./local-secrets
+vault-manager sync pull secret/ ./local-secrets
+vault-manager sync plan secret/ ./local-secrets
+vault-manager sync apply secret/ ./local-secrets
 ```
 
 ### Estimated Effort
@@ -449,7 +449,7 @@ Add shell autocompletion support for all 47+ commands, subcommands, and flags. C
 Build a custom `completion/` package that:
 - Extracts command names from `Runner.Topics` and flags from `Options` struct tags via reflection
 - Generates static completion scripts for **bash**, **zsh**, and **fish**
-- Exposes via `safe completion <shell>` command (outputs script to stdout)
+- Exposes via `vault-manager completion <shell>` command (outputs script to stdout)
 
 This avoids migrating to Cobra (which would touch the entire codebase) while providing full completion support.
 
@@ -516,16 +516,16 @@ _safe_completions() {
         # ... per-command flags ...
     esac
 }
-complete -F _safe_completions safe
+complete -F _vault_manager_completions vault-manager
 ```
 
 ### 6.4 Zsh Completion (`completion/zsh.go`)
 
-Generates `_safe` function using zsh's `_arguments` / `_describe`:
+Generates `_vault_manager` function using zsh's `_arguments` / `_describe`:
 
 ```zsh
-#compdef safe
-_safe() {
+#compdef vault-manager
+_vault_manager() {
     local -a commands
     commands=(
         'ask:Create or update a secret (prompt visible)'
@@ -539,7 +539,7 @@ _safe() {
         '1:command:->cmd' '*::arg:->args'
 
     case $state in
-        cmd) _describe 'safe commands' commands ;;
+        cmd) _describe 'vault-manager commands' commands ;;
         args)
             case $words[1] in
                 x509)  _describe 'x509 subcommands' x509cmds ;;
@@ -548,27 +548,27 @@ _safe() {
             esac ;;
     esac
 }
-_safe "$@"
+_vault_manager "$@"
 ```
 
 ### 6.5 Fish Completion (`completion/fish.go`)
 
-Generates `complete -c safe` statements:
+Generates `complete -c vault-manager` statements:
 
 ```fish
-complete -c safe -n '__fish_use_subcommand' -a 'get' -d 'Retrieve a secret'
-complete -c safe -n '__fish_use_subcommand' -a 'set' -d 'Create or update a secret'
+complete -c vault-manager -n '__fish_use_subcommand' -a 'get' -d 'Retrieve a secret'
+complete -c vault-manager -n '__fish_use_subcommand' -a 'set' -d 'Create or update a secret'
 # ... all commands ...
-complete -c safe -s k -l insecure -d 'Skip TLS verification'
-complete -c safe -n '__fish_seen_subcommand_from x509' -a 'issue' -d 'Issue certificate'
-complete -c safe -n '__fish_seen_subcommand_from sync' -a 'plan' -d 'Show planned changes'
+complete -c vault-manager -s k -l insecure -d 'Skip TLS verification'
+complete -c vault-manager -n '__fish_seen_subcommand_from x509' -a 'issue' -d 'Issue certificate'
+complete -c vault-manager -n '__fish_seen_subcommand_from sync' -a 'plan' -d 'Show planned changes'
 # ... subcommands and per-command flags ...
 ```
 
 ### 6.6 Dynamic Completions (Phase 6b — optional)
 
 For real-time Vault path completion:
-- Add hidden `safe __complete <command> <partial>` command
+- Add hidden `vault-manager __complete <command> <partial>` command
 - Reads target from `~/.saferc`, connects to Vault, calls `v.List(prefix)`
 - Outputs matching paths (one per line)
 - Bash/zsh/fish scripts call this for argument completion on commands like `get`, `set`, `tree`, `ls`, `delete`
@@ -583,7 +583,7 @@ package main
 func registerCompletionCommands(r *Runner, opt *Options) {
     r.Dispatch("completion", &Help{
         Summary: "Generate shell completion scripts",
-        Usage:   "safe completion <bash|zsh|fish>",
+        Usage:   "vault-manager completion <bash|zsh|fish>",
         Type:    AdministrativeCommand,
     }, func(command string, args ...string) error {
         cmds := completion.ExtractCommands(r.Topics, reflect.TypeOf(*opt))
@@ -603,13 +603,13 @@ func registerCompletionCommands(r *Runner, opt *Options) {
 Usage:
 ```bash
 # Bash — add to ~/.bashrc
-source <(safe completion bash)
+source <(vault-manager completion bash)
 
 # Zsh — add to ~/.zshrc
-source <(safe completion zsh)
+source <(vault-manager completion zsh)
 
 # Fish — save to completions dir
-safe completion fish > ~/.config/fish/completions/safe.fish
+vault-manager completion fish > ~/.config/fish/completions/vault-manager.fish
 ```
 
 ### 6.8 Files to Create/Modify
@@ -629,9 +629,9 @@ safe completion fish > ~/.config/fish/completions/safe.fish
 
 ```makefile
 completions: build
-    ./safe completion bash > completions/safe.bash
-    ./safe completion zsh  > completions/_safe
-    ./safe completion fish > completions/safe.fish
+    ./vault-manager completion bash > completions/vault-manager.bash
+    ./vault-manager completion zsh  > completions/_vault-manager
+    ./vault-manager completion fish > completions/vault-manager.fish
 
 release: build completions
     # include completions/ in release artifacts
@@ -643,17 +643,17 @@ release: build completions
 |------|------------|
 | `ExtractCommands` | Mock Topics map + Options type → verify full command list |
 | `GenerateBash` | Output contains `complete -F`, all command names, key flags |
-| `GenerateZsh` | Output contains `#compdef safe`, `_safe`, command descriptions |
-| `GenerateFish` | Output contains `complete -c safe`, subcommand conditions |
-| Syntax validation | `safe completion bash \| bash -n`, `safe completion zsh \| zsh -n` |
+| `GenerateZsh` | Output contains `#compdef vault-manager`, `_vault_manager`, command descriptions |
+| `GenerateFish` | Output contains `complete -c vault-manager`, subcommand conditions |
+| Syntax validation | `vault-manager completion bash \| bash -n`, `vault-manager completion zsh \| zsh -n` |
 
 ### Verification
 
 ```bash
 go build .
 go test ./completion/...
-./safe completion bash | bash -n   # syntax check
-./safe completion zsh  | zsh -n    # syntax check
+./vault-manager completion bash | bash -n   # syntax check
+./vault-manager completion zsh  | zsh -n    # syntax check
 # Manual: source completion and test TAB after "safe "
 ```
 
@@ -672,7 +672,7 @@ Phase 2 (split files — cleaner integration) and Phase 5 (sync commands must be
 | **Phase 1** | Unit tests for base functionality | 3–5 days | None |
 | **Phase 2** | Split monolithic files | 3–5 days | Phase 1 |
 | **Phase 3** | Upgrade Go 1.14 → 1.22 | 2–3 days | Phase 2 |
-| **Phase 4** | Rename package to `github.com/SomeBlackMagic/vault-cli-manager` | 0.5–1 day | Phase 3 |
+| **Phase 4** | Rename package to `github.com/SomeBlackMagic/vault-manager` | 0.5–1 day | Phase 3 |
 | **Phase 5** | Filesystem-based KV sync (pull/plan/apply) | 5–8 days | Phase 4 |
 | **Phase 6** | Shell completion (bash/zsh/fish) | 3–4 days | Phase 2, Phase 5 |
 | **Total** | | **16.5–26 days** | |

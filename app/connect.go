@@ -5,7 +5,7 @@ import (
 	"os"
 
 	fmt "github.com/jhunt/go-ansi"
-	"github.com/SomeBlackMagic/vault-cli-manager/vault"
+	"github.com/SomeBlackMagic/vault-manager/vault"
 )
 
 func Connect(auth bool) *vault.Vault {

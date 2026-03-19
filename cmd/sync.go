@@ -1,15 +1,15 @@
 package cmd
 
 import (
-	"github.com/SomeBlackMagic/vault-cli-manager/app"
-	"github.com/SomeBlackMagic/vault-cli-manager/rc"
-	"github.com/SomeBlackMagic/vault-cli-manager/vaultsync"
+	"github.com/SomeBlackMagic/vault-manager/app"
+	"github.com/SomeBlackMagic/vault-manager/rc"
+	"github.com/SomeBlackMagic/vault-manager/vaultsync"
 )
 
 func registerSyncCommands(r *app.Runner, opt *Options) {
 	r.Dispatch("sync", &app.Help{
 		Summary: "Manage secrets via local filesystem (pull/plan/apply)",
-		Usage:   "safe sync <pull|plan|apply> VAULT-PATH LOCAL-DIR",
+		Usage:   "vault-manager sync <pull|plan|apply> VAULT-PATH LOCAL-DIR",
 		Type:    app.AdministrativeCommand,
 		Description: `
 Manage Vault secrets using a Terraform-style pull/plan/apply workflow.
@@ -37,7 +37,7 @@ Subcommands:
 
 	r.Dispatch("sync pull", &app.Help{
 		Summary: "Download Vault secrets to local JSON files",
-		Usage:   "safe sync pull VAULT-PATH LOCAL-DIR",
+		Usage:   "vault-manager sync pull VAULT-PATH LOCAL-DIR",
 		Type:    app.NonDestructiveCommand,
 		Description: `
 Download all secrets under VAULT-PATH to LOCAL-DIR as JSON files.
@@ -66,7 +66,7 @@ Conflict handling:
 
 	r.Dispatch("sync plan", &app.Help{
 		Summary: "Show what changes would be applied to Vault",
-		Usage:   "safe sync plan VAULT-PATH LOCAL-DIR",
+		Usage:   "vault-manager sync plan VAULT-PATH LOCAL-DIR",
 		Type:    app.NonDestructiveCommand,
 		Description: `
 Compare local JSON files in LOCAL-DIR against secrets in Vault at VAULT-PATH
@@ -96,7 +96,7 @@ objects display granular field changes instead of the full blob.
 
 	r.Dispatch("sync apply", &app.Help{
 		Summary: "Apply local changes to Vault",
-		Usage:   "safe sync apply VAULT-PATH LOCAL-DIR",
+		Usage:   "vault-manager sync apply VAULT-PATH LOCAL-DIR",
 		Type:    app.DestructiveCommand,
 		Description: `
 Compare local JSON files in LOCAL-DIR against secrets in Vault at VAULT-PATH,

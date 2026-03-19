@@ -7,7 +7,7 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/SomeBlackMagic/vault-cli-manager/rc"
+	"github.com/SomeBlackMagic/vault-manager/rc"
 )
 
 var _ = Describe("Config", func() {
@@ -272,14 +272,14 @@ var _ = Describe("Config", func() {
 	})
 
 	Describe("Read and Write round-trip", func() {
-		It("writes and reads back a config from the saferc file", func() {
+		It("writes and reads back a config from the vault-managerrc file", func() {
 			c := rc.Config{Version: 1, Current: "v1", Vaults: map[string]*rc.Vault{
 				"v1": {URL: "https://v.example.com", Token: "tok"},
 			}}
 			err := c.Write()
 			Expect(err).ToNot(HaveOccurred())
 
-			safeRcPath := filepath.Join(tmpHome, ".saferc")
+			safeRcPath := filepath.Join(tmpHome, ".vault-managerrc")
 			_, statErr := os.Stat(safeRcPath)
 			Expect(statErr).ToNot(HaveOccurred())
 
@@ -290,7 +290,7 @@ var _ = Describe("Config", func() {
 			Expect(v.URL).To(Equal("https://v.example.com"))
 		})
 
-		It("returns a default config when saferc does not exist", func() {
+		It("returns a default config when vault-managerrc does not exist", func() {
 			c := rc.Read()
 			Expect(c.Version).To(Equal(1))
 			Expect(c.Vaults).To(BeNil())

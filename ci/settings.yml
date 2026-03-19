@@ -1,7 +1,7 @@
 ---
 meta:
-  name:    safe
-  release: Safe
+  name:    vault-manager
+  release: Vault Manager
   target:  buffalo-lab
   url:     https://pipes.starkandwayne.com
 
@@ -19,8 +19,8 @@ meta:
     secret_key: ((cfcommunity.secret))
 
   github:
-    owner:  starkandwayne
-    repo:   safe
+    owner:  SomeBlackMagic
+    repo:   vault-manager
     private_key:  ((github.private-key))
     access_token: ((github.access-token))
 

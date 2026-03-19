@@ -8,16 +8,16 @@ import (
 	"time"
 
 	"github.com/cloudfoundry-community/vaultkv"
-	"github.com/SomeBlackMagic/vault-cli-manager/app"
+	"github.com/SomeBlackMagic/vault-manager/app"
 	fmt "github.com/jhunt/go-ansi"
-	"github.com/SomeBlackMagic/vault-cli-manager/rc"
-	"github.com/SomeBlackMagic/vault-cli-manager/vault"
+	"github.com/SomeBlackMagic/vault-manager/rc"
+	"github.com/SomeBlackMagic/vault-manager/vault"
 )
 
 func registerTreeCommands(r *app.Runner, opt *Options) {
 	r.Dispatch("versions", &app.Help{
 		Summary: "Print information about the versions of one or more paths",
-		Usage:   "safe versions PATH [PATHS...]",
+		Usage:   "vault-manager versions PATH [PATHS...]",
 		Type:    app.NonDestructiveCommand,
 	}, func(command string, args ...string) error {
 		rc.Apply(opt.UseTarget)
@@ -83,7 +83,7 @@ func registerTreeCommands(r *app.Runner, opt *Options) {
 
 	r.Dispatch("ls", &app.Help{
 		Summary: "Print the keys and sub-directories at one or more paths",
-		Usage:   "safe ls [-1|-q] [PATH ...]",
+		Usage:   "vault-manager ls [-1|-q] [PATH ...]",
 		Type:    app.NonDestructiveCommand,
 		Description: `
 	Specifying the -1 flag will print one result per line.
@@ -180,13 +180,13 @@ func registerTreeCommands(r *app.Runner, opt *Options) {
 
 	r.Dispatch("tree", &app.Help{
 		Summary: "Print a tree listing of one or more paths",
-		Usage:   "safe tree [-d|-q|--keys] [PATH ...]",
+		Usage:   "vault-manager tree [-d|-q|--keys] [PATH ...]",
 		Type:    app.NonDestructiveCommand,
 		Description: `
 Walks the hierarchy of secrets stored underneath a given path, listing all
 reachable name/value pairs and displaying them in a tree format.  If '-d' is
 given, only the containing folders will be printed; this more concise output
-can be useful when you're trying to get your bearings. If '-q' is given, safe
+can be useful when you're trying to get your bearings. If '-q' is given, vault-manager
 will not inspect each key in a v1 v2 mount backend to see if it has been marked
 as deleted. This may cause keys which would 404 in an attempt to read them to
 appear in the tree, but is often considerably quicker for larger vaults. This
@@ -231,12 +231,12 @@ flag does nothing for kv v1 mounts.
 
 	r.Dispatch("paths", &app.Help{
 		Summary: "Print all of the known paths, one per line",
-		Usage:   "safe paths [-q|--keys] PATH [PATH ...]",
+		Usage:   "vault-manager paths [-q|--keys] PATH [PATH ...]",
 		Type:    app.NonDestructiveCommand,
 		Description: `
 Walks the hierarchy of secrets stored underneath a given path, listing all
 reachable name/value pairs and displaying them in a list. If '-q' is given,
-safe will not inspect each key in a v1 v2 mount backend to see if it has been
+vault-manager will not inspect each key in a v1 v2 mount backend to see if it has been
 marked as deleted. This may cause keys which would 404 in an attempt to read
 them to appear in the tree, but is often considerably quicker for larger
 vaults. This flag does nothing for kv v1 mounts.

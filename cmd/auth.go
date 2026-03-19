@@ -6,15 +6,15 @@ import (
 
 	"github.com/cloudfoundry-community/vaultkv"
 	fmt "github.com/jhunt/go-ansi"
-	"github.com/SomeBlackMagic/vault-cli-manager/app"
-	"github.com/SomeBlackMagic/vault-cli-manager/prompt"
-	"github.com/SomeBlackMagic/vault-cli-manager/rc"
+	"github.com/SomeBlackMagic/vault-manager/app"
+	"github.com/SomeBlackMagic/vault-manager/prompt"
+	"github.com/SomeBlackMagic/vault-manager/rc"
 )
 
 func registerAuthCommands(r *app.Runner, opt *Options) {
 	r.Dispatch("auth", &app.Help{
 		Summary: "Authenticate to the current target",
-		Usage:   "safe auth [--path <value>] (token|github|ldap|okta|userpass|approle)",
+		Usage:   "vault-manager auth [--path <value>] (token|github|ldap|okta|userpass|approle)",
 		Description: `
 Set the authentication token sent when talking to the Vault.
 
@@ -165,7 +165,7 @@ Flags:
 
 	r.Dispatch("logout", &app.Help{
 		Summary: "Forget the authentication token of the currently targeted Vault",
-		Usage:   "safe logout\n",
+		Usage:   "vault-manager logout\n",
 		Type:    app.AdministrativeCommand,
 	}, func(command string, args ...string) error {
 		cfg := rc.Apply(opt.UseTarget)
@@ -185,7 +185,7 @@ Flags:
 
 	r.Dispatch("renew", &app.Help{
 		Summary: "Renew one or more authentication tokens",
-		Usage:   "safe renew [all]\n",
+		Usage:   "vault-manager renew [all]\n",
 		Type:    app.AdministrativeCommand,
 	}, func(command string, args ...string) error {
 		if len(args) > 0 {

@@ -7,10 +7,10 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/SomeBlackMagic/vault-cli-manager/app"
+	"github.com/SomeBlackMagic/vault-manager/app"
 	fmt "github.com/jhunt/go-ansi"
-	"github.com/SomeBlackMagic/vault-cli-manager/rc"
-	"github.com/SomeBlackMagic/vault-cli-manager/vault"
+	"github.com/SomeBlackMagic/vault-manager/rc"
+	"github.com/SomeBlackMagic/vault-manager/vault"
 	"gopkg.in/yaml.v2"
 )
 
@@ -64,7 +64,7 @@ func registerSecretCommands(r *app.Runner, opt *Options) {
 
 	r.Dispatch("ask", &app.Help{
 		Summary: "Create or update an insensitive configuration value",
-		Usage:   "safe ask PATH NAME=[VALUE] [NAME ...]",
+		Usage:   "vault-manager ask PATH NAME=[VALUE] [NAME ...]",
 		Type:    app.DestructiveCommand,
 		Description: `
 Update a single path in the Vault with new or updated named attributes.
@@ -72,7 +72,7 @@ Any existing name/value pairs not specified on the command-line will
 be left alone, with their original values.
 
 You will be prompted to provide (without confirmation) any values that
-are omitted. Unlike the 'safe set' and 'safe paste' commands, data entry
+are omitted. Unlike the 'vault-manager set' and 'vault-manager paste' commands, data entry
 is NOT obscured.
 `,
 	}, func(command string, args ...string) error {
@@ -81,7 +81,7 @@ is NOT obscured.
 
 	r.Dispatch("set", &app.Help{
 		Summary: "Create or update a secret",
-		Usage:   "safe set PATH NAME=[VALUE] [NAME ...]",
+		Usage:   "vault-manager set PATH NAME=[VALUE] [NAME ...]",
 		Type:    app.DestructiveCommand,
 		Description: `
 Update a single path in the Vault with new or updated named attributes.
@@ -90,23 +90,23 @@ left alone, with their original values.
 
 Values can be provided a number of different ways.
 
-    safe set secret/path key=value
+    vault-manager set secret/path key=value
 
 Will set "key" to "value", but that exposes the value in the process table
 (and possibly in shell history files).  This is normally fine for usernames,
 IP addresses, and other public information.
 
-If this worries you, leave off the '=value', and safe will prompt you.
+If this worries you, leave off the '=value', and vault-manager will prompt you.
 
-    safe set secret/path key
+    vault-manager set secret/path key
 
 Some secrets perfer to live on disk, in files.  Certificates, private keys,
 really long secrets that are tough to type, etc.  For those, you can use
 the '@' notation:
 
-    safe set secret/path key@path/to/file
+    vault-manager set secret/path key@path/to/file
 
-This causes safe to read the file 'path/to/file', relative to the current
+This causes vault-manager to read the file 'path/to/file', relative to the current
 working directory, and insert the contents into the Vault.
 `,
 	}, func(command string, args ...string) error {
@@ -115,15 +115,15 @@ working directory, and insert the contents into the Vault.
 
 	r.Dispatch("paste", &app.Help{
 		Summary: "Create or update a secret",
-		Usage:   "safe paste PATH NAME=[VALUE] [NAME ...]",
+		Usage:   "vault-manager paste PATH NAME=[VALUE] [NAME ...]",
 		Type:    app.DestructiveCommand,
 		Description: `
-Works just like 'safe set', updating a single path in the Vault with new or
+Works just like 'vault-manager set', updating a single path in the Vault with new or
 updated named attributes.  Any existing name/value pairs not specified on the
 command-line will be left alone, with their original values.
 
 You will be prompted to provide any values that are omitted, but unlike the
-'safe set' command, you will not be asked to confirm those values.  This makes
+'vault-manager set' command, you will not be asked to confirm those values.  This makes
 sense when you are pasting in credentials from an external password manager
 like 1password or Lastpass.
 `,
@@ -134,15 +134,15 @@ like 1password or Lastpass.
 
 	r.Dispatch("exists", &app.Help{
 		Summary: "Check to see if a secret exists in the Vault",
-		Usage:   "safe exists PATH",
+		Usage:   "vault-manager exists PATH",
 		Type:    app.NonDestructiveCommand,
 		Description: `
 When you want to see if a secret has been defined, but don't need to know
-what its value is, you can use 'safe exists'.  PATH can either be a partial
+what its value is, you can use 'vault-manager exists'.  PATH can either be a partial
 path (i.e. 'secret/accounts/users/admin') or a fully-qualified path that
 incudes a name (like 'secret/accounts/users/admin:username').
 
-'safe exists' does not produce any output, and is suitable for use in scripts.
+'vault-manager exists' does not produce any output, and is suitable for use in scripts.
 
 The process will exit 0 (zero) if PATH exists in the current Vault.
 Otherwise, it will exit 1 (one).  If unrelated errors, like network timeouts,
@@ -167,7 +167,7 @@ certificate validation failure, etc. occur, they will be printed as well.
 
 	r.Dispatch("get", &app.Help{
 		Summary: "Retrieve the key/value pairs (or just keys) of one or more paths",
-		Usage:   "safe get [--keys] [--yaml] PATH [PATH ...]",
+		Usage:   "vault-manager get [--keys] [--yaml] PATH [PATH ...]",
 		Description: `
 Allows you to retrieve one or more values stored in the given secret, or just the
 valid keys.  It operates in the following modes:

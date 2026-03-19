@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/SomeBlackMagic/vault-cli-manager/vault"
+	"github.com/SomeBlackMagic/vault-manager/vault"
 )
 
 // ReadLocalState walks localDir and parses all .json files.

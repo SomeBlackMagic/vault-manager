@@ -6,8 +6,8 @@ import (
 	fmt "github.com/jhunt/go-ansi"
 	"github.com/mattn/go-isatty"
 
-	"github.com/SomeBlackMagic/vault-cli-manager/prompt"
-	"github.com/SomeBlackMagic/vault-cli-manager/vault"
+	"github.com/SomeBlackMagic/vault-manager/prompt"
+	"github.com/SomeBlackMagic/vault-manager/vault"
 )
 
 // Pull downloads all secrets at vaultPath to localDir as JSON files.

@@ -1,7 +1,7 @@
 package vaultsync
 
 import (
-	"github.com/SomeBlackMagic/vault-cli-manager/vault"
+	"github.com/SomeBlackMagic/vault-manager/vault"
 )
 
 // ChangeType represents the type of change between local and remote state.

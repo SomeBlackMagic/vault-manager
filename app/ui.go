@@ -9,7 +9,7 @@ import (
 	"unicode"
 
 	"github.com/jhunt/go-ansi"
-	"github.com/SomeBlackMagic/vault-cli-manager/prompt"
+	"github.com/SomeBlackMagic/vault-manager/prompt"
 )
 
 func warn(warning string, args ...interface{}) {

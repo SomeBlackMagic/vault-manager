@@ -8,7 +8,7 @@ import (
 
 	"github.com/cloudfoundry-community/vaultkv"
 	"github.com/jhunt/go-ansi"
-	"github.com/SomeBlackMagic/vault-cli-manager/prompt"
+	"github.com/SomeBlackMagic/vault-manager/prompt"
 	"golang.org/x/term"
 )
 

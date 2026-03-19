@@ -1,6 +1,6 @@
 package cmd
 
-import "github.com/SomeBlackMagic/vault-cli-manager/app"
+import "github.com/SomeBlackMagic/vault-manager/app"
 
 // RegisterAll registers all CLI commands with the runner.
 func RegisterAll(r *app.Runner, opt *Options, version string) {

@@ -10,17 +10,17 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/SomeBlackMagic/vault-cli-manager/app"
+	"github.com/SomeBlackMagic/vault-manager/app"
 	fmt "github.com/jhunt/go-ansi"
-	"github.com/SomeBlackMagic/vault-cli-manager/prompt"
-	"github.com/SomeBlackMagic/vault-cli-manager/rc"
-	"github.com/SomeBlackMagic/vault-cli-manager/vault"
+	"github.com/SomeBlackMagic/vault-manager/prompt"
+	"github.com/SomeBlackMagic/vault-manager/rc"
+	"github.com/SomeBlackMagic/vault-manager/vault"
 )
 
 func registerTargetCommands(r *app.Runner, opt *Options) {
 	r.Dispatch("targets", &app.Help{
 		Summary: "List all targeted Vaults",
-		Usage:   "safe targets",
+		Usage:   "vault-manager targets",
 		Type:    app.AdministrativeCommand,
 	}, func(command string, args ...string) error {
 		if len(args) != 0 {
@@ -116,7 +116,7 @@ PEM-encoded certificate. The given certificate will be trusted as the signing
 certificate to the certificate served by the Vault server. This flag can be
 provided multiple times to provide multiple CA certificates.
 `,
-		Usage: "safe [-k] [--[no]-strongbox] [-n] [--ca-cert] target [URL] [ALIAS] | safe target -i",
+		Usage: "vault-manager [-k] [--[no]-strongbox] [-n] [--ca-cert] target [URL] [ALIAS] | vault-manager target -i",
 		Type:  app.AdministrativeCommand,
 	}, func(command string, args ...string) error {
 		var cfg rc.Config
@@ -126,7 +126,7 @@ provided multiple times to provide multiple CA certificates.
 			cfg = rc.Read()
 		}
 		skipverify := false
-		if os.Getenv("SAFE_SKIP_VERIFY") == "1" {
+		if os.Getenv("VAULT_MANAGER_SKIP_VERIFY") == "1" {
 			skipverify = true
 		}
 
@@ -162,8 +162,8 @@ provided multiple times to provide multiple CA certificates.
 					fmt.Fprintf(os.Stderr, "@R{No Vaults have been targeted yet.}\n\n")
 					fmt.Fprintf(os.Stderr, "You will need to target a Vault manually first.\n\n")
 					fmt.Fprintf(os.Stderr, "Try something like this:\n")
-					fmt.Fprintf(os.Stderr, "     @C{safe target ops https://address.of.your.vault}\n")
-					fmt.Fprintf(os.Stderr, "     @C{safe auth (github|token|ldap|okta|userpass)}\n")
+					fmt.Fprintf(os.Stderr, "     @C{vault-manager target ops https://address.of.your.vault}\n")
+					fmt.Fprintf(os.Stderr, "     @C{vault-manager auth (github|token|ldap|okta|userpass)}\n")
 					fmt.Fprintf(os.Stderr, "\n")
 					os.Exit(1)
 				}
@@ -289,7 +289,7 @@ provided multiple times to provide multiple CA certificates.
 
 	r.Dispatch("target delete", &app.Help{
 		Summary: "Forget about a targeted Vault",
-		Usage:   "safe target delete ALIAS",
+		Usage:   "vault-manager target delete ALIAS",
 		Type:    app.DestructiveCommand,
 	}, func(command string, args ...string) error {
 		cfg := rc.Apply(opt.UseTarget)
@@ -307,7 +307,7 @@ provided multiple times to provide multiple CA certificates.
 
 	r.Dispatch("env", &app.Help{
 		Summary: "Print the environment variables for the current target",
-		Usage:   "safe env",
+		Usage:   "vault-manager env",
 		Description: `
 Print the environment variables representing the current target.
 

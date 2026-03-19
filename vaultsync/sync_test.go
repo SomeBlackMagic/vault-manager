@@ -8,8 +8,8 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
-	"github.com/SomeBlackMagic/vault-cli-manager/vault"
-	"github.com/SomeBlackMagic/vault-cli-manager/vaultsync"
+	"github.com/SomeBlackMagic/vault-manager/vault"
+	"github.com/SomeBlackMagic/vault-manager/vaultsync"
 )
 
 // mockVault implements VaultAccessor for testing.

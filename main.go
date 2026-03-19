@@ -7,9 +7,9 @@ import (
 	fmt "github.com/jhunt/go-ansi"
 	"github.com/jhunt/go-cli"
 	env "github.com/jhunt/go-envirotron"
-	"github.com/SomeBlackMagic/vault-cli-manager/app"
-	"github.com/SomeBlackMagic/vault-cli-manager/cmd"
-	"github.com/SomeBlackMagic/vault-cli-manager/rc"
+	"github.com/SomeBlackMagic/vault-manager/app"
+	"github.com/SomeBlackMagic/vault-manager/cmd"
+	"github.com/SomeBlackMagic/vault-manager/rc"
 )
 
 // Version is set at build time via -ldflags "-X main.Version=...".
@@ -61,10 +61,10 @@ func main() {
 		}
 
 		os.Unsetenv("VAULT_SKIP_VERIFY")
-		os.Unsetenv("SAFE_SKIP_VERIFY")
+		os.Unsetenv("VAULT_MANAGER_SKIP_VERIFY")
 		if opt.Insecure {
 			os.Setenv("VAULT_SKIP_VERIFY", "1")
-			os.Setenv("SAFE_SKIP_VERIFY", "1")
+			os.Setenv("VAULT_MANAGER_SKIP_VERIFY", "1")
 		}
 
 		defer rc.Cleanup()

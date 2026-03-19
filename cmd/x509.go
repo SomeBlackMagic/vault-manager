@@ -10,15 +10,15 @@ import (
 	"time"
 
 	fmt "github.com/jhunt/go-ansi"
-	"github.com/SomeBlackMagic/vault-cli-manager/app"
-	"github.com/SomeBlackMagic/vault-cli-manager/rc"
-	"github.com/SomeBlackMagic/vault-cli-manager/vault"
+	"github.com/SomeBlackMagic/vault-manager/app"
+	"github.com/SomeBlackMagic/vault-manager/rc"
+	"github.com/SomeBlackMagic/vault-manager/vault"
 )
 
 func registerX509Commands(r *app.Runner, opt *Options) {
 	r.Dispatch("x509", &app.Help{
 		Summary: "Issue / Revoke X.509 Certificates and Certificate Authorities",
-		Usage:   "safe x509 <command> [OPTIONS]",
+		Usage:   "vault-manager x509 <command> [OPTIONS]",
 		Type:    app.HiddenCommand,
 		Description: `
 x509 provides a handful of sub-commands for issuing, signing and revoking
@@ -74,7 +74,7 @@ Here are the supported commands:
 
 	r.Dispatch("x509 validate", &app.Help{
 		Summary: "Validate an X.509 Certificate / Private Key",
-		Usage:   "safe x509 validate [OPTIONS} path/to/certificate/or/ca",
+		Usage:   "vault-manager x509 validate [OPTIONS} path/to/certificate/or/ca",
 		Type:    app.NonDestructiveCommand,
 		Description: `
 Certificate validation can be checked in many ways, and this utility
@@ -87,11 +87,11 @@ provides most of them, including:
   - Certificate is valid for a given name / IP / email address (--for)
   - RSA Private Key strength,in bits (--bits)
 
-If any of the selected validations fails, safe will immediately exit
+If any of the selected validations fails, vault-manager will immediately exit
 with a non-zero exit code to signal failure.  This can be used in scripts
 to check certificates and alter behavior depending on their validity.
 
-If the validations pass, safe will continue on to execute subsequent
+If the validations pass, vault-manager will continue on to execute subsequent
 sub-commands.
 
 For revocation and expiry checks there are both positive validations (i.e.
@@ -106,7 +106,7 @@ The following options are recognized:
                       ability to sign other certifictes.
 
   -i, --signed-by X   The path to the CA that signed this certificate.
-                      safe will check that the CA is the one who signed
+                      vault-manager will check that the CA is the one who signed
                       the certificate, and that the signature is valid.
 
   -R, --not-revoked   Verify that the certificate has not been revoked
@@ -127,7 +127,7 @@ The following options are recognized:
                       and subject alternate names (of the correct type),
                       to see if the certificate was issued for this name.
                       This can be specified multiple times, in which case
-                      all checks must pass for safe to exit zero.
+                      all checks must pass for vault-manager to exit zero.
 
   -b, --bits N        Check that the RSA private key for this certificate
                       has the specified key size (in bits).  This can be
@@ -227,7 +227,7 @@ The following options are recognized:
 
 	r.Dispatch("x509 issue", &app.Help{
 		Summary: "Issue X.509 Certificates and Certificate Authorities",
-		Usage:   "safe x509 issue [OPTIONS] --name cn.example.com path/to/certificate",
+		Usage:   "vault-manager x509 issue [OPTIONS] --name cn.example.com path/to/certificate",
 		Type:    app.DestructiveCommand,
 		Description: `
 Issue a new X.509 Certificate
@@ -249,7 +249,7 @@ The following options are recognized:
 
   -n, --name          Subject Alternate Name(s) for this
                       certificate.  These can be domain names,
-                      IP addresses or email address -- safe will
+                      IP addresses or email address -- vault-manager will
                       figure out how to properly encode them.
                       Can (and probably should) be specified
                       more than once.
@@ -373,7 +373,7 @@ The following options are recognized:
 
 	r.Dispatch("x509 reissue", &app.Help{
 		Summary: "Reissue X.509 Certificates and Certificate Authorities",
-		Usage:   "safe x509 reissue [OPTIONS] path/to/certificate",
+		Usage:   "vault-manager x509 reissue [OPTIONS] path/to/certificate",
 		Type:    app.DestructiveCommand,
 		Description: `
 Reissues an X.509 Certificate with a new key.
@@ -391,7 +391,7 @@ The following options are recognized:
 
   -n, --name          Subject Alternate Name(s) for this
                       certificate.  These can be domain names,
-                      IP addresses or email address -- safe will
+                      IP addresses or email address -- vault-manager will
                       figure out how to properly encode them.
                       Can (and probably should) be specified
 											more than once. This flag will not append additional SANs,
@@ -443,7 +443,7 @@ The following options are recognized:
 			r.ExitWithUsage("x509 reissue")
 		}
 		if opt.SkipIfExists {
-			fmt.Fprintf(os.Stderr, "@R{!!} @C{--no-clobber} @R{is incompatible with} @C{safe x509 reissue}\n")
+			fmt.Fprintf(os.Stderr, "@R{!!} @C{--no-clobber} @R{is incompatible with} @C{vault-manager x509 reissue}\n")
 			r.ExitWithUsage("x509 reissue")
 		}
 
@@ -552,7 +552,7 @@ The following options are recognized:
 
 	r.Dispatch("x509 renew", &app.Help{
 		Summary: "Renew X.509 Certificates and Certificate Authorities",
-		Usage:   "safe x509 renew [OPTIONS] path/to/certificate",
+		Usage:   "vault-manager x509 renew [OPTIONS] path/to/certificate",
 		Type:    app.DestructiveCommand,
 		Description: `
 Renew an X.509 Certificate with existing key
@@ -569,7 +569,7 @@ The following options are recognized:
 
   -n, --name          Subject Alternate Name(s) for this
                       certificate.  These can be domain names,
-                      IP addresses or email address -- safe will
+                      IP addresses or email address -- vault-manager will
                       figure out how to properly encode them.
                       Can (and probably should) be specified
                       more than once. This flag will not append additional SANs,
@@ -616,7 +616,7 @@ The following options are recognized:
 			r.ExitWithUsage("x509 renew")
 		}
 		if opt.SkipIfExists {
-			fmt.Fprintf(os.Stderr, "@R{!!} @C{--no-clobber} @R{is incompatible with} @C{safe x509 renew}\n")
+			fmt.Fprintf(os.Stderr, "@R{!!} @C{--no-clobber} @R{is incompatible with} @C{vault-manager x509 renew}\n")
 			r.ExitWithUsage("x509 renew")
 		}
 
@@ -709,7 +709,7 @@ The following options are recognized:
 
 	r.Dispatch("x509 revoke", &app.Help{
 		Summary: "Revoke X.509 Certificates and Certificate Authorities",
-		Usage:   "safe x509 revoke [OPTIONS] path/to/certificate",
+		Usage:   "vault-manager x509 revoke [OPTIONS] path/to/certificate",
 		Type:    app.DestructiveCommand,
 		Description: `
 Revoke an X.509 Certificate via its Certificate Authority
@@ -765,7 +765,7 @@ The following options are recognized:
 
 	r.Dispatch("x509 show", &app.Help{
 		Summary: "Show the details of an X.509 Certificate",
-		Usage:   "safe x509 show path [path ...]",
+		Usage:   "vault-manager x509 show path [path ...]",
 		Type:    app.NonDestructiveCommand,
 		Description: `
 When dealing with lots of different X.509 Certificates, it is important
@@ -966,11 +966,11 @@ prints out information about a certificate, including:
 
 	r.Dispatch("x509 crl", &app.Help{
 		Summary: "Manage a X.509 Certificate Authority Revocation List",
-		Usage:   "safe x509 crl --renew path",
+		Usage:   "vault-manager x509 crl --renew path",
 		Type:    app.DestructiveCommand,
 		Description: `
 Each X.509 Certificate Authority (especially those generated by
-'safe issue --ca') carries with a list of certificates it has revoked,
+'vault-manager issue --ca') carries with a list of certificates it has revoked,
 by certificate serial number.  This command lets you manage that CRL.
 
 Currently, only the --renew option is supported, and it is required:

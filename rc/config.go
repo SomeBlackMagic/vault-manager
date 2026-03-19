@@ -74,8 +74,8 @@ func userHomeDir() string {
 	return os.Getenv("HOME")
 }
 
-func saferc() string {
-	return fmt.Sprintf("%s/.saferc", userHomeDir())
+func vaultManagerrc() string {
+	return fmt.Sprintf("%s/.vault-managerrc", userHomeDir())
 }
 
 func svtoken() string {
@@ -108,7 +108,7 @@ func (legacy *oldConfig) convert() Config {
 func Read() Config {
 	var c Config
 
-	b, err := os.ReadFile(saferc())
+	b, err := os.ReadFile(vaultManagerrc())
 	if err != nil {
 		return Config{Version: 1}
 	}
@@ -144,7 +144,7 @@ func (c *Config) Write() error {
 		return err
 	}
 
-	err = os.WriteFile(saferc(), b, 0600)
+	err = os.WriteFile(vaultManagerrc(), b, 0600)
 	if err != nil {
 		return err
 	}
@@ -355,7 +355,7 @@ func (c *Config) Vault(which string) (*Vault, error) {
 		return nil, err
 	}
 	if !ok {
-		return nil, fmt.Errorf("Current target '%s' not found in ~/.saferc", which)
+		return nil, fmt.Errorf("Current target '%s' not found in ~/.vault-managerrc", which)
 	}
 	return v, nil
 }

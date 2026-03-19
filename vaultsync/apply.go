@@ -5,8 +5,8 @@ import (
 
 	fmt "github.com/jhunt/go-ansi"
 
-	"github.com/SomeBlackMagic/vault-cli-manager/prompt"
-	"github.com/SomeBlackMagic/vault-cli-manager/vault"
+	"github.com/SomeBlackMagic/vault-manager/prompt"
+	"github.com/SomeBlackMagic/vault-manager/vault"
 )
 
 // Apply runs plan, displays output, prompts for confirmation, then applies changes.

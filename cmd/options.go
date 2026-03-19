@@ -9,9 +9,9 @@ type Options struct {
 	Quiet        bool `cli:"--quiet"`
 
 	// Behavour of -T must chain through -- separated commands.  There is code
-	// that relies on this.  Will default to $SAFE_TARGET if it exists, or
-	// the current safe target otherwise.
-	UseTarget string `cli:"-T, --target" env:"SAFE_TARGET"`
+	// that relies on this.  Will default to $VAULT_MANAGER_TARGET if it exists, or
+	// the current vault-manager target otherwise.
+	UseTarget string `cli:"-T, --target" env:"VAULT_MANAGER_TARGET"`
 
 	HelpCommand    struct{} `cli:"help"`
 	VersionCommand struct{} `cli:"version"`

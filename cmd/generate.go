@@ -4,10 +4,10 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/SomeBlackMagic/vault-cli-manager/app"
+	"github.com/SomeBlackMagic/vault-manager/app"
 	fmt "github.com/jhunt/go-ansi"
-	"github.com/SomeBlackMagic/vault-cli-manager/rc"
-	"github.com/SomeBlackMagic/vault-cli-manager/vault"
+	"github.com/SomeBlackMagic/vault-manager/rc"
+	"github.com/SomeBlackMagic/vault-manager/vault"
 
 	uuid "github.com/pborman/uuid"
 )
@@ -15,7 +15,7 @@ import (
 func registerGenerateCommands(r *app.Runner, opt *Options) {
 	r.Dispatch("gen", &app.Help{
 		Summary: "Generate a random password",
-		Usage:   "safe gen [-l <length>] [-p] PATH:KEY [PATH:KEY ...]",
+		Usage:   "vault-manager gen [-l <length>] [-p] PATH:KEY [PATH:KEY ...]",
 		Type:    app.DestructiveCommand,
 		Description: `
 LENGTH defaults to 64 characters.
@@ -86,7 +86,7 @@ The following options are recognized:
 
 	r.Dispatch("uuid", &app.Help{
 		Summary:     "Generate a new UUIDv4",
-		Usage:       "safe uuid PATH[:KEY]",
+		Usage:       "vault-manager uuid PATH[:KEY]",
 		Type:        app.DestructiveCommand,
 		Description: ``,
 	}, func(command string, args ...string) error {
@@ -140,7 +140,7 @@ The following options are recognized:
 
 	r.Dispatch("ssh", &app.Help{
 		Summary: "Generate one or more new SSH RSA keypair(s)",
-		Usage:   "safe ssh [NBITS] PATH [PATH ...]",
+		Usage:   "vault-manager ssh [NBITS] PATH [PATH ...]",
 		Type:    app.DestructiveCommand,
 		Description: `
 For each PATH given, a new SSH RSA public/private keypair will be generated,
@@ -187,7 +187,7 @@ public key, formatted for use in an SSH authorized_keys file, under 'public'.
 
 	r.Dispatch("rsa", &app.Help{
 		Summary: "Generate a new RSA keypair",
-		Usage:   "safe rsa [NBITS] PATH [PATH ...]",
+		Usage:   "vault-manager rsa [NBITS] PATH [PATH ...]",
 		Type:    app.DestructiveCommand,
 		Description: `
 For each PATH given, a new RSA public/private keypair will be generated with a,
@@ -234,7 +234,7 @@ be PEM-encoded.
 
 	r.Dispatch("dhparam", &app.Help{
 		Summary: "Generate Diffie-Helman key exchange parameters",
-		Usage:   "safe dhparam [NBITS] PATH",
+		Usage:   "vault-manager dhparam [NBITS] PATH",
 		Type:    app.DestructiveCommand,
 		Description: `
 NBITS defaults to 2048.

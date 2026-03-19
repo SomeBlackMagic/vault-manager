@@ -31,7 +31,7 @@ func NewProxyRouter() (*ProxyRouter, error) {
 	httpProxy := getEnvironmentVariable("HTTP_PROXY", "http_proxy")
 	httpsProxy := getEnvironmentVariable("HTTPS_PROXY", "https_proxy")
 
-	allProxy := getEnvironmentVariable("SAFE_ALL_PROXY", "safe_all_proxy")
+	allProxy := getEnvironmentVariable("VAULT_MANAGER_ALL_PROXY", "vault_manager_all_proxy")
 	if allProxy != "" {
 		httpProxy = allProxy
 		httpsProxy = allProxy
@@ -39,8 +39,8 @@ func NewProxyRouter() (*ProxyRouter, error) {
 
 	noProxy := getEnvironmentVariable("NO_PROXY", "no_proxy")
 
-	knownHostsFile := getEnvironmentVariable("SAFE_KNOWN_HOSTS_FILE", "safe_known_hosts_file")
-	skipHostKeyString := getEnvironmentVariable("SAFE_SKIP_HOST_KEY_VALIDATION", "safe_skip_host_key_validation")
+	knownHostsFile := getEnvironmentVariable("VAULT_MANAGER_KNOWN_HOSTS_FILE", "vault_manager_known_hosts_file")
+	skipHostKeyString := getEnvironmentVariable("VAULT_MANAGER_SKIP_HOST_KEY_VALIDATION", "vault_manager_skip_host_key_validation")
 	skipHostKeyValidation := true
 	for _, falseString := range []string{"", "false", "no", "0"} {
 		if skipHostKeyString == falseString {

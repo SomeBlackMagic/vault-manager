@@ -5,7 +5,7 @@ import (
 
 	fmt "github.com/jhunt/go-ansi"
 
-	"github.com/SomeBlackMagic/vault-cli-manager/vault"
+	"github.com/SomeBlackMagic/vault-manager/vault"
 )
 
 // Plan reads local state and remote state, computes ChangeSet, prints diff.

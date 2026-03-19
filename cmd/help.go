@@ -4,20 +4,20 @@ import (
 	"os"
 	"strings"
 
-	"github.com/SomeBlackMagic/vault-cli-manager/app"
+	"github.com/SomeBlackMagic/vault-manager/app"
 	fmt "github.com/jhunt/go-ansi"
 )
 
 func registerHelpCommands(r *app.Runner, opt *Options, version string) {
 	r.Dispatch("version", &app.Help{
-		Summary: "Print the version of the safe CLI",
-		Usage:   "safe version",
+		Summary: "Print the version of the vault-manager CLI",
+		Usage:   "vault-manager version",
 		Type:    app.AdministrativeCommand,
 	}, func(command string, args ...string) error {
 		if version != "" {
-			fmt.Fprintf(os.Stderr, "safe v%s\n", version)
+			fmt.Fprintf(os.Stderr, "vault-manager v%s\n", version)
 		} else {
-			fmt.Fprintf(os.Stderr, "safe (development build)\n")
+			fmt.Fprintf(os.Stderr, "vault-manager (development build)\n")
 		}
 		os.Exit(0)
 		return nil
@@ -34,19 +34,19 @@ func registerHelpCommands(r *app.Runner, opt *Options, version string) {
 
 	r.Dispatch("envvars", nil, func(command string, args ...string) error {
 		fmt.Printf(`@G{[SCRIPTING]}
-  @B{SAFE_TARGET}    The vault alias which requests are sent to.
+  @B{VAULT_MANAGER_TARGET}    The vault alias which requests are sent to.
 
 @G{[PROXYING]}
   @B{HTTP_PROXY}     The proxy to use for HTTP requests.
   @B{HTTPS_PROXY}    The proxy to use for HTTPS requests.
-  @B{SAFE_ALL_PROXY} The proxy to use for both HTTP and HTTPS requests.
+  @B{VAULT_MANAGER_ALL_PROXY} The proxy to use for both HTTP and HTTPS requests.
                  Overrides HTTP_PROXY and HTTPS_PROXY.
   @B{NO_PROXY}       A comma-separated list of domains to not use proxies for.
-  @B{SAFE_KNOWN_HOSTS_FILE}
+  @B{VAULT_MANAGER_KNOWN_HOSTS_FILE}
                  The location of your known hosts file, used for
                  'ssh+socks5://' proxying. Uses '${HOME}/.ssh/known_hosts'
                  by default.
-  @B{SAFE_SKIP_HOST_KEY_VALIDATION}
+  @B{VAULT_MANAGER_SKIP_HOST_KEY_VALIDATION}
                  If set, 'ssh+socks5://' proxying will skip host key validation
                  validation of the remote ssh server.
 
@@ -70,7 +70,7 @@ func registerHelpCommands(r *app.Runner, opt *Options, version string) {
 
   Your known_hosts file is used to verify the remote ssh server's host key. If no
   key for the given server is present, you will be prompted to add the key. If no
-  TTY when no host key is present, safe will return with a failure.
+  TTY when no host key is present, vault-manager will return with a failure.
 
 `)
 		return nil

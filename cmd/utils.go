@@ -9,20 +9,20 @@ import (
 
 	"github.com/jhunt/go-ansi"
 	fmt "github.com/jhunt/go-ansi"
-	"github.com/SomeBlackMagic/vault-cli-manager/app"
-	"github.com/SomeBlackMagic/vault-cli-manager/rc"
-	"github.com/SomeBlackMagic/vault-cli-manager/vault"
+	"github.com/SomeBlackMagic/vault-manager/app"
+	"github.com/SomeBlackMagic/vault-manager/rc"
+	"github.com/SomeBlackMagic/vault-manager/vault"
 )
 
 func registerUtilsCommands(r *app.Runner, opt *Options) {
 	r.Dispatch("fmt", &app.Help{
 		Summary: "Reformat an existing name/value pair, into a new name",
-		Usage:   "safe fmt FORMAT PATH OLD-NAME NEW-NAME",
+		Usage:   "vault-manager fmt FORMAT PATH OLD-NAME NEW-NAME",
 		Type:    app.DestructiveCommand,
 		Description: `
 Take the value stored at PATH/OLD-NAME, format it a different way, and
 then save it at PATH/NEW-NAME.  This can be useful for generating a new
-password (via 'safe gen') and then crypt'ing it for use in /etc/shadow,
+password (via 'vault-manager gen') and then crypt'ing it for use in /etc/shadow,
 using the 'crypt-sha512' format.
 
 Supported formats:
@@ -68,8 +68,8 @@ Supported formats:
 	})
 
 	r.Dispatch("prompt", &app.Help{
-		Summary: "Print a prompt (useful for scripting safe command sets)",
-		Usage:   "safe echo Your Message Here:",
+		Summary: "Print a prompt (useful for scripting vault-manager command sets)",
+		Usage:   "vault-manager echo Your Message Here:",
 		Type:    app.NonDestructiveCommand,
 	}, func(command string, args ...string) error {
 		// --no-clobber is ignored here, because there's no context of what you're
@@ -81,8 +81,8 @@ Supported formats:
 	})
 
 	r.Dispatch("option", &app.Help{
-		Summary: "View or edit global safe CLI options",
-		Usage:   "safe option [optionname=value]",
+		Summary: "View or edit global vault-manager CLI options",
+		Usage:   "vault-manager option [optionname=value]",
 		Type:    app.AdministrativeCommand,
 		Description: `
 Currently available options are:
@@ -158,13 +158,13 @@ Currently available options are:
 
 	r.Dispatch("vault", &app.Help{
 		Summary: "Run arbitrary Vault CLI commands against the current target",
-		Usage:   "safe vault ...",
+		Usage:   "vault-manager vault ...",
 		Type:    app.DestructiveCommand,
 	}, func(command string, args ...string) error {
 		rc.Apply(opt.UseTarget)
 
 		if opt.SkipIfExists {
-			fmt.Fprintf(os.Stderr, "@C{--no-clobber} @Y{specified, but is ignored for} @C{safe vault}\n")
+			fmt.Fprintf(os.Stderr, "@C{--no-clobber} @Y{specified, but is ignored for} @C{vault-manager vault}\n")
 		}
 
 		proxy, err := vault.NewProxyRouter()
@@ -220,11 +220,11 @@ Currently available options are:
 
 	r.Dispatch("curl", &app.Help{
 		Summary: "Issue arbitrary HTTP requests to the current Vault (for diagnostics)",
-		Usage:   "safe curl [OPTIONS] METHOD REL-URI [DATA]",
+		Usage:   "vault-manager curl [OPTIONS] METHOD REL-URI [DATA]",
 		Type:    app.DestructiveCommand,
 		Description: `
 This is a debugging and diagnostics tool.  You should not need to use
-'safe curl' for normal operation or interaction with a Vault.
+'vault-manager curl' for normal operation or interaction with a Vault.
 
 The following OPTIONS are recognized:
 

@@ -15,16 +15,16 @@ import (
 
 	"github.com/cloudfoundry-community/vaultkv"
 	fmt "github.com/jhunt/go-ansi"
-	"github.com/SomeBlackMagic/vault-cli-manager/app"
-	"github.com/SomeBlackMagic/vault-cli-manager/rc"
-	"github.com/SomeBlackMagic/vault-cli-manager/vault"
+	"github.com/SomeBlackMagic/vault-manager/app"
+	"github.com/SomeBlackMagic/vault-manager/rc"
+	"github.com/SomeBlackMagic/vault-manager/vault"
 )
 
 func registerAdminCommands(r *app.Runner, opt *Options) {
 	r.Dispatch("status", &app.Help{
 		Summary: "Print the status of the current target's backend nodes",
 		Type:    app.AdministrativeCommand,
-		Usage:   "safe status",
+		Usage:   "vault-manager status",
 		Description: `
 Returns the seal status of each node in the Vault cluster.
 
@@ -35,7 +35,7 @@ just this Vault instance.
 
 The following options are recognized:
 
-	-e, --err-sealed  Causes safe to exit with a non-zero code if any of the
+	-e, --err-sealed  Causes vault-manager to exit with a non-zero code if any of the
 	                  queried Vaults are sealed.
 	`,
 	}, func(command string, args ...string) error {
@@ -52,7 +52,7 @@ The following options are recognized:
 		if cfg.HasStrongbox() {
 			st, err := v.Strongbox()
 			if err != nil {
-				return fmt.Errorf("%w; are you targeting a `safe' installation?", err)
+				return fmt.Errorf("%w; are you targeting a `vault-manager' installation?", err)
 			}
 
 			for addr, state := range st {
@@ -90,7 +90,7 @@ The following options are recognized:
 
 	r.Dispatch("local", &app.Help{
 		Summary: "Run a local vault",
-		Usage:   "safe local (--memory|--file path/to/dir) [--as name] [--port port]",
+		Usage:   "vault-manager local (--memory|--file path/to/dir) [--as name] [--port port]",
 		Description: `
 Spins up a new Vault instance.
 
@@ -138,7 +138,7 @@ subsequent activations of the Vault.
 		if err != nil {
 			return err
 		}
-		fmt.Fprintf(f, `# safe local config
+		fmt.Fprintf(f, `# vault-manager local config
 disable_mlock = true
 
 listener "tcp" {
@@ -283,7 +283,7 @@ listener "tcp" {
 			if err != nil {
 				return fmt.Errorf("Could not add `secret' mount: %w", err)
 			}
-			fmt.Printf("safe has mounted the @C{secret} backend\n\n")
+			fmt.Printf("vault-manager has mounted the @C{secret} backend\n\n")
 		}
 
 		s := vault.NewSecret()
@@ -294,7 +294,7 @@ listener "tcp" {
 			fmt.Fprintf(os.Stderr, "Now targeting (temporary) @Y{%s} at @C{%s}\n", cfg.Current, cfg.URL())
 			if opt.Local.Memory {
 				fmt.Fprintf(os.Stderr, "@R{This Vault is MEMORY-BACKED!}\n")
-				fmt.Fprintf(os.Stderr, "If you want to @Y{retain your secrets} be sure to @C{safe export}.\n")
+				fmt.Fprintf(os.Stderr, "If you want to @Y{retain your secrets} be sure to @C{vault-manager export}.\n")
 			} else {
 				fmt.Fprintf(os.Stderr, "Storing data (encrypted) in @G{%s}\n", opt.Local.File)
 				fmt.Fprintf(os.Stderr, "Your Vault Seal Key is @M{%s}\n", keys[0])
@@ -318,7 +318,7 @@ listener "tcp" {
 
 	r.Dispatch("init", &app.Help{
 		Summary: "Initialize a new vault",
-		Usage:   "safe init [--keys #] [--threshold #] [--single] [--json] [--no-mount] [--sealed]",
+		Usage:   "vault-manager init [--keys #] [--threshold #] [--single] [--json] [--no-mount] [--sealed]",
 		Description: `
 Initializes a brand new Vault backend, generating new seal keys, and an
 initial root token.  This information will be printed out, so that you
@@ -329,12 +329,12 @@ required to unseal the Vault after a restart.  You can adjust this via
 the --keys and --threshold options.  The --single option is a shortcut
 for specifying a single key and a threshold of 1.
 
-Once the Vault is initialized, safe will unseal it automatically, using
+Once the Vault is initialized, vault-manager will unseal it automatically, using
 the newly minted seal keys, unless you pass it the --sealed option.
-The root token will also be stored in the ~/.saferc file, saving you the
-trouble of calling 'safe auth token' yourself.
+The root token will also be stored in the ~/.vault-managerrc file, saving you the
+trouble of calling 'vault-manager auth token' yourself.
 
-The --json flag causes 'safe init' to print out the seal keys and initial
+The --json flag causes 'vault-manager init' to print out the seal keys and initial
 root token in a machine-friendly JSON format, that looks like this:
 
     {
@@ -512,7 +512,7 @@ Vault will remain sealed).
 					}
 
 					if !opt.Init.JSON {
-						fmt.Printf("safe has mounted the @C{secret} backend\n")
+						fmt.Printf("vault-manager has mounted the @C{secret} backend\n")
 					}
 				}
 			}
@@ -523,7 +523,7 @@ Vault will remain sealed).
 			v.Write("secret/handshake", s)
 
 			if !opt.Init.JSON {
-				fmt.Printf("safe has unsealed the Vault for you, and written a test value\n")
+				fmt.Printf("vault-manager has unsealed the Vault for you, and written a test value\n")
 				fmt.Printf("at @C{secret/handshake}.\n\n")
 			}
 
@@ -531,7 +531,7 @@ Vault will remain sealed).
 			if opt.Init.Persist {
 				v.SaveSealKeys(keys)
 				if !opt.Init.JSON {
-					fmt.Printf("safe has written the unseal keys at @C{secret/vault/seal/keys}\n")
+					fmt.Printf("vault-manager has written the unseal keys at @C{secret/vault/seal/keys}\n")
 				}
 			}
 		} else {
@@ -543,7 +543,7 @@ Vault will remain sealed).
 		if !opt.Init.JSON {
 			fmt.Printf("\n")
 			fmt.Printf("You have been automatically authenticated to the Vault with the\n")
-			fmt.Printf("initial root token.  Be safe out there!\n")
+			fmt.Printf("initial root token.  Be vault-manager out there!\n")
 			fmt.Printf("\n")
 		}
 
@@ -552,7 +552,7 @@ Vault will remain sealed).
 
 	r.Dispatch("unseal", &app.Help{
 		Summary: "Unseal the current target",
-		Usage:   "safe unseal",
+		Usage:   "vault-manager unseal",
 		Type:    app.AdministrativeCommand,
 	}, func(command string, args ...string) error {
 		cfg := rc.Apply(opt.UseTarget)
@@ -562,7 +562,7 @@ Vault will remain sealed).
 		if cfg.HasStrongbox() {
 			st, err := v.Strongbox()
 			if err != nil {
-				return fmt.Errorf("%w; are you targeting a `safe' installation?", err)
+				return fmt.Errorf("%w; are you targeting a `vault-manager' installation?", err)
 			}
 
 			for addr, state := range st {
@@ -620,7 +620,7 @@ Vault will remain sealed).
 
 	r.Dispatch("seal", &app.Help{
 		Summary: "Seal the current target",
-		Usage:   "safe seal",
+		Usage:   "vault-manager seal",
 		Type:    app.AdministrativeCommand,
 	}, func(command string, args ...string) error {
 		cfg := rc.Apply(opt.UseTarget)
@@ -630,7 +630,7 @@ Vault will remain sealed).
 		if cfg.HasStrongbox() {
 			st, err := v.Strongbox()
 			if err != nil {
-				return fmt.Errorf("%w; are you targeting a `safe' installation?", err)
+				return fmt.Errorf("%w; are you targeting a `vault-manager' installation?", err)
 			}
 
 			for addr, state := range st {
@@ -701,7 +701,7 @@ Vault will remain sealed).
 
 	r.Dispatch("rekey", &app.Help{
 		Summary: "Re-key your Vault with new unseal keys",
-		Usage:   "safe rekey [--gpg email@address ...] [--keys #] [--threshold #]",
+		Usage:   "vault-manager rekey [--gpg email@address ...] [--keys #] [--threshold #]",
 		Type:    app.DestructiveCommand,
 		Description: `
 Rekeys Vault with new unseal keys. This will require a quorum

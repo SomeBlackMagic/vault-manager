@@ -6,7 +6,7 @@ GO_LDFLAGS := -ldflags="-X main.Version=$(VERSION)"
 
 build:
 	go build $(GO_LDFLAGS) .
-	./safe -v
+	./vault-manager -v
 
 unit-test:
 	go test ./...
@@ -17,8 +17,8 @@ test: build unit-test
 release: build
 	mkdir -p $(RELEASE_ROOT)
 	@go install github.com/mitchellh/gox@latest
-	gox -osarch="$(TARGETS)" --output="$(RELEASE_ROOT)/artifacts/safe-{{.OS}}-{{.Arch}}" $(GO_LDFLAGS)
+	gox -osarch="$(TARGETS)" --output="$(RELEASE_ROOT)/artifacts/vault-manager-{{.OS}}-{{.Arch}}" $(GO_LDFLAGS)
 
 install: build
 	mkdir -p $(DESTDIR)/bin
-	cp safe $(DESTDIR)/bin
+	cp vault-manager $(DESTDIR)/bin

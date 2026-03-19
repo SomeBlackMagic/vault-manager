@@ -9,13 +9,13 @@ import (
 	"strings"
 
 	fmt "github.com/jhunt/go-ansi"
-	"github.com/SomeBlackMagic/vault-cli-manager/app"
-	"github.com/SomeBlackMagic/vault-cli-manager/prompt"
-	"github.com/SomeBlackMagic/vault-cli-manager/rc"
-	"github.com/SomeBlackMagic/vault-cli-manager/vault"
+	"github.com/SomeBlackMagic/vault-manager/app"
+	"github.com/SomeBlackMagic/vault-manager/prompt"
+	"github.com/SomeBlackMagic/vault-manager/rc"
+	"github.com/SomeBlackMagic/vault-manager/vault"
 )
 
-// For versions of safe 0.10+
+// For versions of vault-manager 0.10+
 // Older versions just use a map[string]map[string]string
 type exportFormat struct {
 	ExportVersion uint `json:"export_version"`
@@ -38,7 +38,7 @@ type exportVersion struct {
 func registerMigrationCommands(r *app.Runner, opt *Options) {
 	r.Dispatch("delete", &app.Help{
 		Summary: "Remove one or more path from the Vault",
-		Usage:   "safe delete [-rfDa] PATH [PATH ...]",
+		Usage:   "vault-manager delete [-rfDa] PATH [PATH ...]",
 		Type:    app.DestructiveCommand,
 		Description: `
 -d (--destroy) will cause KV v2 secrets to be destroyed instead of
@@ -86,7 +86,7 @@ of just the specified (or latest if unspecified) version.
 
 	r.Dispatch("undelete", &app.Help{
 		Summary: "Undelete a soft-deleted secret from a V2 backend",
-		Usage:   "safe undelete PATH [PATH ...]",
+		Usage:   "vault-manager undelete PATH [PATH ...]",
 		Type:    app.DestructiveCommand,
 		Description: `
 If no version is specified, this attempts to undelete the newest version of the secret
@@ -139,7 +139,7 @@ been irrevocably destroyed. An error also occurs if a key is specified.
 
 	r.Dispatch("revert", &app.Help{
 		Summary: "Revert a secret to a previous version",
-		Usage:   "safe revert PATH VERSION",
+		Usage:   "vault-manager revert PATH VERSION",
 		Type:    app.DestructiveCommand,
 		Description: `
 -d (--deleted) will handle deleted versions by undeleting them, reading them, and then
@@ -233,14 +233,14 @@ redeleting them.
 
 	r.Dispatch("export", &app.Help{
 		Summary: "Export one or more subtrees for migration / backup purposes",
-		Usage:   "safe export [-ad] PATH [PATH ...]",
+		Usage:   "vault-manager export [-ad] PATH [PATH ...]",
 		Type:    app.NonDestructiveCommand,
 		Description: `
 Normally, the export will get only the latest version of each secret, and encode it in a format that is backwards-
-compatible with pre-1.0.0 versions of safe (and newer versions).
+compatible with pre-1.0.0 versions of vault-manager (and newer versions).
 -a (--all) will encode all versions of each secret. This will cause the export to use the V2 format, which is
-incompatible with versions of safe prior to v1.0.0
--d (--deleted) will cause safe to undelete, read, and then redelete deleted secrets in order to encode them in the
+incompatible with versions of vault-manager prior to v1.0.0
+-d (--deleted) will cause vault-manager to undelete, read, and then redelete deleted secrets in order to encode them in the
 backup. Without this, deleted versions will be ignored.
 `}, func(command string, args ...string) error {
 		rc.Apply(opt.UseTarget)
@@ -344,7 +344,7 @@ backup. Without this, deleted versions will be ignored.
 
 				export.Data[secret.Path] = thisSecret
 
-				//Wrap export in array so that older versions of safe don't try to import this improperly.
+				//Wrap export in array so that older versions of vault-manager don't try to import this improperly.
 				toExport = []exportFormat{export}
 			}
 
@@ -372,7 +372,7 @@ backup. Without this, deleted versions will be ignored.
 
 	r.Dispatch("import", &app.Help{
 		Summary: "Import name/value pairs into the current Vault",
-		Usage:   "safe import <backup/file.json",
+		Usage:   "vault-manager import <backup/file.json",
 		Type:    app.DestructiveCommand,
 		Description: `
 -I (--ignore-destroyed) will keep destroyed versions from being replicated in the import by
@@ -390,7 +390,7 @@ rting garbage data and then destroying it (which is originally done to preserve 
 		}
 
 		if opt.SkipIfExists {
-			fmt.Fprintf(os.Stderr, "@R{!!} @C{--no-clobber} @R{is incompatible with} @C{safe import}\n")
+			fmt.Fprintf(os.Stderr, "@R{!!} @C{--no-clobber} @R{is incompatible with} @C{vault-manager import}\n")
 			r.ExitWithUsage("import")
 		}
 
@@ -525,7 +525,7 @@ rting garbage data and then destroying it (which is originally done to preserve 
 
 	r.Dispatch("move", &app.Help{
 		Summary: "Move a secret from one path to another",
-		Usage:   "safe move [-rfd] OLD-PATH NEW-PATH",
+		Usage:   "vault-manager move [-rfd] OLD-PATH NEW-PATH",
 		Type:    app.DestructiveCommand,
 		Description: `
 Specifying the --deep (-d) flag will cause versions to be grabbed from the source
@@ -576,7 +576,7 @@ and overwrite all versions of the secret at the destination.
 
 	r.Dispatch("copy", &app.Help{
 		Summary: "Copy a secret from one path to another",
-		Usage:   "safe copy [-rfd] OLD-PATH NEW-PATH",
+		Usage:   "vault-manager copy [-rfd] OLD-PATH NEW-PATH",
 		Type:    app.DestructiveCommand,
 		Description: `
 Specifying the --deep (-d) flag will cause all living versions to be grabbed from the source

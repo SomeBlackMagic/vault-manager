@@ -1,9 +1,9 @@
-safe - A Vault CLI
+vault-manager - A Vault CLI
 ==================
 
 Questions? Pop in our [slack channel](https://cloudfoundry.slack.com/messages/vault/)!
 
-![SAFE](docs/safe.png)
+![vault-manager](docs/vault-manager.png)
 
 [Vault][vault] is an awesome project and it comes with superb
 documentation, a rock-solid server component and a flexible and
@@ -11,7 +11,7 @@ capable command-line interface.
 
 ![get-set-passwords](docs/safely-generate-passwords.gif)
 
-So, why `safe`?  To solve the following problems:
+So, why `vault-manager`?  To solve the following problems:
 
   1. Securely generate new SSH public / private keys
   2. Securely generate random RSA key pairs
@@ -26,12 +26,12 @@ ATTENTION HOMEBREW USERS
 ------------------------
 
 If you run Homebrew on MacOS, be aware that the the Formula for
-safe in homebrew core is outdated, incorrect, and unmaintained.
+vault-manager in homebrew core is outdated, incorrect, and unmaintained.
 We maintain our own tap, which you are encouraged to use instead:
 
 ```
 brew tap starkandwayne/cf
-brew install starkandwayne/cf/safe
+brew install starkandwayne/cf/vault-manager
 ```
 
 
@@ -39,13 +39,13 @@ Authentication
 --------------
 
 To make it easier to target multiple Vaults from one client (i.e.
-your work laptop), `safe` lets you track and authenticate against
+your work laptop), `vault-manager` lets you track and authenticate against
 _targets_, each representing a different vault.
 
 To get started, you'll need to add a new target:
 
 ```
-safe target https://vault.example.com myvault
+vault-manager target https://vault.example.com myvault
 ```
 
 The first argument is the URL to the Vault; the second is a
@@ -53,13 +53,13 @@ shorthand alias for the target.  Later, you can retarget this
 Vault with just:
 
 ```
-safe target myvault
+vault-manager target myvault
 ```
 
 You can see what Vaults you have targeted by running
 
 ```
-safe targets
+vault-manager targets
 ```
 
 All commands will be run against the currently targeted Vault.
@@ -67,10 +67,10 @@ All commands will be run against the currently targeted Vault.
 To authenticate:
 
 ```
-safe auth [token]
-safe auth ldap
-safe auth github
-safe auth okta
+vault-manager auth [token]
+vault-manager auth ldap
+vault-manager auth github
+vault-manager auth okta
 ```
 
 (Other authentication backends are not yet supported)
@@ -81,24 +81,24 @@ the necessary credentials to authenticated against the Vault.
 Usage
 -----
 
-`safe` operates by way of sub-commands.  To generate a new
+`vault-manager` operates by way of sub-commands.  To generate a new
 2048-bit SSH keypair, and store it in `secret/ssh`:
 
 ```
-safe ssh 2048 secret/ssh
+vault-manager ssh 2048 secret/ssh
 ```
 
 To set non-sensitive keys, you can just specify them inline:
 
 ```
-safe set secret/ssh username=system
+vault-manager set secret/ssh username=system
 ```
 
 If you use a password manager (good for you!) and don't want to
 have to paste passwords twice, use the `paste` subcommand:
 
 ```
-safe paste secret/1pass/managed
+vault-manager paste secret/1pass/managed
 ```
 
 Commands can be chained by separating them with the argument
@@ -106,23 +106,23 @@ terminator, `--`, so to both create a new SSH keypair and set the
 username:
 
 ```
-safe ssh 2048 secret/ssh -- set secret/ssh username=system
+vault-manager ssh 2048 secret/ssh -- set secret/ssh username=system
 ```
 
 Auto-generated passwords are easy too:
 
 ```
-safe gen secret/account passphrase
+vault-manager gen secret/account passphrase
 ```
 
 Sometimes, you just want to import passwords from another source
 (like your own password manager), without the hassle of writing
 files to disk or the risk of leaking credentials via the process
-table or your shell history file.  For that, `safe` provides a
+table or your shell history file.  For that, `vault-manager` provides a
 double-confirmation interactive mode:
 
 ```
-safe set secret/ssl/ca passphrase
+vault-manager set secret/ssl/ca passphrase
 passphrase [hidden]:
 passphrase [confirm]:
 ```
@@ -135,25 +135,25 @@ All operations (except for `delete`) are additive, so the
 following:
 
 ```
-safe set secret/x a=b c=d
+vault-manager set secret/x a=b c=d
 ```
 
 is equivalent to this:
 
 ```
-safe set secret/x a=b -- set secret/x c=d
+vault-manager set secret/x a=b -- set secret/x c=d
 ```
 
 Need to take an existing password, and generate a crypt-sha512 hash,
-or base64 encode it? `safe fmt` will do this, and store the results
+or base64 encode it? `vault-manager fmt` will do this, and store the results
 in a new key for you, making it easy to generate a password, and then
 format that password as needed.
 
 ```
-safe gen secret/account password
-safe fmt base64 secret/account password base64_pass
-safe fmt crypt-sha512 secret/account password crypt_pass
-safe get secret/account
+vault-manager gen secret/account password
+vault-manager fmt base64 secret/account password base64_pass
+vault-manager fmt crypt-sha512 secret/account password crypt_pass
+vault-manager get secret/account
 ```
 
 Command Reference
@@ -171,11 +171,11 @@ passwords, PINs, etc.
 Example:
 
 ```
-safe set secret/root username=root password
+vault-manager set secret/root username=root password
 <prompts for 'password' here...>
 ```
 
-Similarly, `safe paste` works the same way, but does not have a confirmation
+Similarly, `vault-manager paste` works the same way, but does not have a confirmation
 prompt for your value. It assumes you have pasted in the value from a known-good
 source.
 
@@ -184,7 +184,7 @@ Setting the value of a key to be the contents of a file
 Example:
 
 ```
-safe set secret/root ssl_key@/path/to/ssl_key_file
+vault-manager set secret/root ssl_key@/path/to/ssl_key_file
 ```
 
 ### get path \[path ...\]
@@ -194,7 +194,7 @@ output.  This is most useful for piping credentials through
 `keybase` or `pgp` for encrypting and sending to others.
 
 ```
-safe get secret/root secret/whatever secret/key
+vault-manager get secret/root secret/whatever secret/key
 --- # secret/root
 username: root
 password: it's a secret
@@ -219,7 +219,7 @@ Provide a tree hierarchy listing of all reachable keys in the
 Vault.
 
 ```
-safe tree secret/dc1
+vault-manager tree secret/dc1
 secret/dc1
   concourse/
     pipeline-the-first/
@@ -237,7 +237,7 @@ secret/dc1
 Provide a flat listing of all reachable keys in the Vault.
 
 ```
-safe paths secret/dc1
+vault-manager paths secret/dc1
 secret/dc1concourse/pipeline-the-first/aws
 secret/dc1concourse/pipeline-the-first/dockerhub
 secret/dc1concourse/pipeline-the-first/github
@@ -251,7 +251,7 @@ secret/dc1concourse/pipeline-the-second/github
 Removes multiple paths from the Vault.
 
 ```
-safe delete secret/unused
+vault-manager delete secret/unused
 ```
 
 ### move oldpath newpath
@@ -259,13 +259,13 @@ safe delete secret/unused
 Move a secret from `oldpath` to `newpath`, a rename of sorts.
 
 ```
-safe move secret/staging/user secret/prod/user
+vault-manager move secret/staging/user secret/prod/user
 ```
 
 (or, more succinctly, using brace expansion):
 
 ```
-safe move secret/{staging,prod}/user
+vault-manager move secret/{staging,prod}/user
 ```
 
 Any credentials at `newpath` will be completely overwritten.  The
@@ -276,7 +276,7 @@ secret at `oldpath` will no longer exist.
 Copy a secret from `oldpath` to `newpath`.
 
 ```
-safe copy secret/staging/user secret/prod/user
+vault-manager copy secret/staging/user secret/prod/user
 ```
 
 (or, as with `move`, using brace expansion):
@@ -294,13 +294,13 @@ Generate a new, random password.  By default, the generated
 password will be 64 characters long.
 
 ```
-safe gen secret/account secretkey
+vault-manager gen secret/account secretkey
 ```
 
 To get a shorter password, only 16 characters long:
 
 ```
-safe gen 16 secret/account password
+vault-manager gen 16 secret/account password
 ```
 
 ### fmt format_type path oldKey newKey
@@ -318,8 +318,8 @@ Currently supported formats:
 - crypt-sha512
 
 ```
-safe fmt base64 secret/account password base64_password
-safe fmt crypt-sha512 secret/account password crypt_password
+vault-manager fmt base64 secret/account password base64_password
+vault-manager fmt crypt-sha512 secret/account password crypt_password
 ```
 
 ### ssh \[nbits\] path \[path ...\]
@@ -394,16 +394,16 @@ will be imported in an additive nature, so existing credentials
 in the same subtree as imported credentials will be left intact.
 
 If you've got an export saved in a file _on-disk_, you can feed
-it to `safe import` using your shell's redirection facilities:
+it to `vault-manager import` using your shell's redirection facilities:
 
 ```
-safe import < ./path/to/export.file
+vault-manager import < ./path/to/export.file
 ```
 
 You can also use `cat`, in the standard UNIX idiom:
 
 ```
-cat ./path/to/export.file | safe import
+cat ./path/to/export.file | vault-manager import
 ```
 
 (_Note:_ storing exports on-disk is considered bad practice, as
@@ -413,8 +413,8 @@ Import and export can be combined in a pipeline to facilitate
 movement of credentials from one Vault to another, like so:
 
 ```
-safe -T old-vault export secret/sub/tree | \
-  safe -T new-vault import
+vault-manager -T old-vault export secret/sub/tree | \
+  vault-manager -T new-vault import
 ```
 
 ### env
@@ -422,7 +422,7 @@ safe -T old-vault export secret/sub/tree | \
 Print the environment variables describing the current target:
 
 ```
-safe env
+vault-manager env
   VAULT_ADDR  http://localhost:8200
   VAULT_TOKEN  $SOME_UUID
 ```
@@ -431,12 +431,12 @@ You can also use this command to export a target's configuration into the outer
 shell in order to use the Vault CLI directly:
 
 ```
-safe env --bash
+vault-manager env --bash
 \export VAULT_ADDR=http://localhost:8200;
 \export VAULT_TOKEN=$SOME_UUID;
 \unset VAULT_SKIP_VERIFY;
 
-eval $(safe env --bash)
+eval $(vault-manager env --bash)
 ```
 
 [vault]:  https://vaultproject.io
