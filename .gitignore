@@ -5,3 +5,4 @@ ci/credentials.yml
 /t
 /vaults
 *.swp
+.idea
