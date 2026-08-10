@@ -28,7 +28,7 @@ func registerTargetCommands(r *app.Runner, opt *Options) {
 		}
 
 		if opt.UseTarget != "" {
-			fmt.Fprintf(os.Stderr, "@Y{Specifying --target to the targets command makes no sense; ignoring...}\n")
+			fmt.Fprintf(os.Stderr, "@Y{Specifying --target/--connect to the targets command makes no sense; ignoring...}\n")
 		}
 
 		cfg := rc.Apply(opt.UseTarget)
@@ -131,7 +131,7 @@ provided multiple times to provide multiple CA certificates.
 		}
 
 		if opt.UseTarget != "" {
-			fmt.Fprintf(os.Stderr, "@Y{Specifying --target to the target command makes no sense; ignoring...}\n")
+			fmt.Fprintf(os.Stderr, "@Y{Specifying --target/--connect to the target command makes no sense; ignoring...}\n")
 		}
 
 		printTarget := func() {

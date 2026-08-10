@@ -64,6 +64,13 @@ vault-manager targets
 
 All commands will be run against the currently targeted Vault.
 
+You can override the target for a single command with the global
+`-T`/`--target` flag (or its alias `-c`/`--connect`):
+
+```
+vault-manager -c myvault get secret/path
+```
+
 To authenticate:
 
 ```
@@ -416,6 +423,9 @@ movement of credentials from one Vault to another, like so:
 vault-manager -T old-vault export secret/sub/tree | \
   vault-manager -T new-vault import
 ```
+
+(_Note:_ `-c`/`--connect` is an alias for `-T`/`--target`, so
+`vault-manager -c old-vault ...` works the same way.)
 
 ### env
 

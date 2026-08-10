@@ -8,10 +8,10 @@ type Options struct {
 	SkipIfExists bool
 	Quiet        bool `cli:"--quiet"`
 
-	// Behavour of -T must chain through -- separated commands.  There is code
+	// Behavour of -T/-c must chain through -- separated commands.  There is code
 	// that relies on this.  Will default to $VAULT_MANAGER_TARGET if it exists, or
 	// the current vault-manager target otherwise.
-	UseTarget string `cli:"-T, --target" env:"VAULT_MANAGER_TARGET"`
+	UseTarget string `cli:"-T, --target, -c, --connect" env:"VAULT_MANAGER_TARGET"`
 
 	HelpCommand    struct{} `cli:"help"`
 	VersionCommand struct{} `cli:"version"`
