@@ -1,22 +1,60 @@
-FROM golang:1.24-alpine AS builder
+# syntax=docker/dockerfile:1.8
+# check=error=true
 
-WORKDIR /app
+FROM --platform=$BUILDPLATFORM golang:1.24-alpine AS build
 
+ENV CGO_ENABLED=0 \
+    GOMODCACHE=/go/pkg/mod \
+    GOCACHE=/root/.cache/go-build \
+    GOTOOLCHAIN=local \
+    TZ=UTC \
+    SOURCE_DATE_EPOCH=0
+
+WORKDIR /workspace
+
+# warm up module cache
 COPY go.mod go.sum ./
-RUN go mod download
+RUN \
+    --mount=type=cache,target=/go/pkg/mod \
+    --mount=type=cache,target=/root/.cache/go-build \
+    go mod download
 
+# copy sources
 COPY . .
 
-ARG VERSION=dev
-ARG REVISION=dev
-RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-X main.Version=${VERSION} -X main.Revision=${REVISION}" -o vault-manager .
 
-FROM alpine:3.19
+# target parameters for cross-compilation
+ARG TARGETOS
+ARG TARGETARCH
+ARG VERSION
+ARG REVISION
+
+# build the binary
+RUN --mount=type=cache,target=/go/pkg/mod \
+    --mount=type=cache,target=/root/.cache/go-build \
+    GOOS=${TARGETOS:-$(go env GOOS)} \
+    GOARCH=${TARGETARCH:-$(go env GOARCH)} \
+    go build \
+      -v \
+      -o /workspace/vault-manager \
+      -trimpath \
+      -mod=readonly \
+      -buildvcs=false \
+      -tags netgo,osusergo,timetzdata \
+      -pgo=auto \
+      -ldflags "-s -w -buildid= \
+                -extldflags '-static' \
+                -X 'main.version=${VERSION}' \
+                -X 'main.revision=${REVISION}'" \
+      .
+
+FROM alpine:edge
 
 RUN apk --no-cache add ca-certificates
 
-WORKDIR /root/
+# copy the binary (read/execute permissions are enough)
+COPY --from=build --chmod=0555 /workspace/vault-manager /usr/local/bin/vault-manager
 
-COPY --from=builder /app/vault-manager .
+ENTRYPOINT ["/usr/local/bin/vault-manager"]
 
-ENTRYPOINT ["./vault-manager"]
+USER nobody

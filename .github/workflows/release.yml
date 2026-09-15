@@ -6,10 +6,58 @@ on:
       - 'v*'
 
 jobs:
-  release:
+  # Wait for Docker workflow to build and push multi-platform images
+  wait-for-docker:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for Docker workflow
+        uses: lewagon/wait-on-check-action@v1.3.4
+        with:
+          ref: ${{ github.ref }}
+          check-name: docker
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+  extract-binaries:
+    needs: wait-for-docker
     runs-on: ubuntu-latest
     permissions:
-      contents: write
+      contents: read
+      packages: read
+
+    strategy:
+      matrix:
+        arch: [amd64, arm64]
+
+    steps:
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Extract binary
+        run: |
+          TAG="${GITHUB_REF_NAME#v}"
+          IMAGE="ghcr.io/someblackmagic/vault-manager:${TAG}"
+          docker create --name extract --platform "linux/${{ matrix.arch }}" "${IMAGE}"
+          docker cp extract:/usr/local/bin/vault-manager vault-manager-linux-${{ matrix.arch }}
+          docker rm extract
+          tar czf vault-manager-linux-${{ matrix.arch }}.tar.gz vault-manager-linux-${{ matrix.arch }}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: vault-manager-linux-${{ matrix.arch }}
+          path: vault-manager-linux-${{ matrix.arch }}.tar.gz
+
+  build-windows:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout
@@ -20,39 +68,36 @@ jobs:
         with:
           go-version: '1.24'
 
-      - name: Get version and revision
-        id: version
+      - name: Build Windows binary
         run: |
-          echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
-          echo "REVISION=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+          CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build \
+            -trimpath \
+            -ldflags "-s -w -X 'main.Version=${{ github.ref_name }}' -X 'main.Revision=${{ github.sha }}'" \
+            -o vault-manager-windows-amd64.exe .
+          zip vault-manager-windows-amd64.zip vault-manager-windows-amd64.exe
 
-      - name: Install gox
-        run: go install github.com/mitchellh/gox@latest
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: vault-manager-windows-amd64
+          path: vault-manager-windows-amd64.zip
 
-      - name: Build binaries
-        run: |
-          mkdir -p release/artifacts
-          gox -osarch="linux/amd64 darwin/amd64 darwin/arm64 windows/amd64" \
-            -ldflags="-X main.Version=${{ steps.version.outputs.VERSION }} -X main.Revision=${{ steps.version.outputs.REVISION }}" \
-            --output="release/artifacts/vault-manager-{{.OS}}-{{.Arch}}" \
-            .
+  create-release:
+    needs: [extract-binaries, build-windows]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
-      - name: Create archives
-        run: |
-          cd release/artifacts
-          for f in vault-manager-linux-* vault-manager-darwin-*; do
-            tar czf "${f}.tar.gz" "$f"
-            rm "$f"
-          done
-          for f in vault-manager-windows-*; do
-            zip "${f}.zip" "$f"
-            rm "$f"
-          done
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           generate_release_notes: true
           files: |
-            release/artifacts/*.tar.gz
-            release/artifacts/*.zip
+            artifacts/*
