@@ -228,7 +228,7 @@ vault-manager gen 16 secret/account password
 Generate a new UUIDv4 and store it at the given path/key.
 
 ```
-vault-manager uuid secret/account id
+vault-manager uuid secret/account:id
 ```
 
 ### ssh \[nbits\] path \[path ...\]
