@@ -17,16 +17,12 @@ jobs:
           check-name: docker
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
-  extract-binaries:
+  extract-linux-binary:
     needs: wait-for-docker
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: read
-
-    strategy:
-      matrix:
-        arch: [amd64, arm64]
 
     steps:
       - name: Log in to GitHub Container Registry
@@ -36,28 +32,39 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-
-      - name: Extract binary
+      - name: Extract binary from Docker image
         run: |
           TAG="${GITHUB_REF_NAME#v}"
           IMAGE="ghcr.io/someblackmagic/vault-manager:${TAG}"
-          docker create --name extract --platform "linux/${{ matrix.arch }}" "${IMAGE}"
-          docker cp extract:/usr/local/bin/vault-manager vault-manager-linux-${{ matrix.arch }}
+          docker create --name extract --platform linux/amd64 "${IMAGE}"
+          docker cp extract:/usr/local/bin/vault-manager vault-manager-linux-amd64
           docker rm extract
-          tar czf vault-manager-linux-${{ matrix.arch }}.tar.gz vault-manager-linux-${{ matrix.arch }}
+          tar czf vault-manager-linux-amd64.tar.gz vault-manager-linux-amd64
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: vault-manager-linux-${{ matrix.arch }}
-          path: vault-manager-linux-${{ matrix.arch }}.tar.gz
+          name: vault-manager-linux-amd64
+          path: vault-manager-linux-amd64.tar.gz
 
-  build-windows:
+  build-native:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+
+    strategy:
+      matrix:
+        include:
+          - goos: darwin
+            goarch: amd64
+            archive: tar.gz
+          - goos: darwin
+            goarch: arm64
+            archive: tar.gz
+          - goos: windows
+            goarch: amd64
+            archive: zip
+            ext: .exe
 
     steps:
       - name: Checkout
@@ -68,22 +75,38 @@ jobs:
         with:
           go-version: '1.24'
 
-      - name: Build Windows binary
+      - name: Build binary
         run: |
-          CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build \
+          CGO_ENABLED=0 GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build \
+            -v \
             -trimpath \
-            -ldflags "-s -w -X 'main.Version=${{ github.ref_name }}' -X 'main.Revision=${{ github.sha }}'" \
-            -o vault-manager-windows-amd64.exe .
-          zip vault-manager-windows-amd64.zip vault-manager-windows-amd64.exe
+            -mod=readonly \
+            -buildvcs=false \
+            -tags netgo,osusergo,timetzdata \
+            -pgo=auto \
+            -ldflags "-s -w -buildid= \
+                      -extldflags '-static' \
+                      -X 'main.Version=${{ github.ref_name }}' \
+                      -X 'main.Revision=${{ github.sha }}'" \
+            -o vault-manager-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.ext }} .
+
+      - name: Create archive
+        run: |
+          BINARY="vault-manager-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.ext }}"
+          if [ "${{ matrix.archive }}" = "zip" ]; then
+            zip "${BINARY}.zip" "${BINARY}"
+          else
+            tar czf "vault-manager-${{ matrix.goos }}-${{ matrix.goarch }}.tar.gz" "${BINARY}"
+          fi
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: vault-manager-windows-amd64
-          path: vault-manager-windows-amd64.zip
+          name: vault-manager-${{ matrix.goos }}-${{ matrix.goarch }}
+          path: vault-manager-${{ matrix.goos }}-${{ matrix.goarch }}.*
 
   create-release:
-    needs: [extract-binaries, build-windows]
+    needs: [extract-linux-binary, build-native]
     runs-on: ubuntu-latest
     permissions:
       contents: write
