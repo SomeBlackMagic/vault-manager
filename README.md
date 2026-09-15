@@ -7,8 +7,6 @@ vault-manager - A Vault CLI
 documentation, a rock-solid server component and a flexible and
 capable command-line interface.
 
-![get-set-passwords](docs/safely-generate-passwords.gif)
-
 So, why `vault-manager`?  To solve the following problems:
 
   1. Securely generate new SSH public / private keys
