@@ -1,8 +1,6 @@
 vault-manager - A Vault CLI
 ==================
 
-Questions? Pop in our [slack channel](https://cloudfoundry.slack.com/messages/vault/)!
-
 ![vault-manager](docs/vault-manager.png)
 
 [Vault][vault] is an awesome project and it comes with superb
@@ -22,18 +20,56 @@ So, why `vault-manager`?  To solve the following problems:
 Primarily, these are things encountered in trying to build secure
 BOSH deployments using Vault and [Spruce][spruce].
 
-ATTENTION HOMEBREW USERS
-------------------------
+Installation
+------------
 
-If you run Homebrew on MacOS, be aware that the the Formula for
-vault-manager in homebrew core is outdated, incorrect, and unmaintained.
-We maintain our own tap, which you are encouraged to use instead:
+### Download the latest binary
 
+Grab the latest release for your platform from the
+[Releases page](https://github.com/SomeBlackMagic/vault-manager/releases/latest).
+
+Linux (amd64), using curl:
+
+```bash
+curl -sL https://github.com/SomeBlackMagic/vault-manager/releases/latest/download/vault-manager-linux-amd64.tar.gz | tar xz
+sudo mv vault-manager-linux-amd64 /usr/local/bin/vault-manager
 ```
-brew tap starkandwayne/cf
-brew install starkandwayne/cf/vault-manager
+
+macOS (Apple Silicon), using curl:
+
+```bash
+curl -sL https://github.com/SomeBlackMagic/vault-manager/releases/latest/download/vault-manager-darwin-arm64.tar.gz | tar xz
+sudo mv vault-manager-darwin-arm64 /usr/local/bin/vault-manager
 ```
 
+macOS (Intel) / Linux, using wget:
+
+```bash
+wget -qO- https://github.com/SomeBlackMagic/vault-manager/releases/latest/download/vault-manager-darwin-amd64.tar.gz | tar xz
+sudo mv vault-manager-darwin-amd64 /usr/local/bin/vault-manager
+```
+
+Windows (amd64), using PowerShell:
+
+```powershell
+Invoke-WebRequest -Uri "https://github.com/SomeBlackMagic/vault-manager/releases/latest/download/vault-manager-windows-amd64.zip" -OutFile "vault-manager.zip"
+Expand-Archive -Path "vault-manager.zip" -DestinationPath "."
+```
+
+Then move `vault-manager-windows-amd64.exe` to a folder on your `PATH`
+(renaming it to `vault-manager.exe` is recommended).
+
+### Docker
+
+```bash
+docker run --rm \
+  -v "$HOME/.vault-managerrc:/root/.vault-managerrc:ro" \
+  ghcr.io/someblackmagic/vault-manager \
+  status
+```
+
+See [docs/docker.md](docs/docker.md) for the full set of Docker examples
+(sync, environment variables, docker-compose, etc.)
 
 Authentication
 --------------
@@ -156,515 +192,16 @@ vault-manager fmt crypt-sha512 secret/account password crypt_pass
 vault-manager get secret/account
 ```
 
-Command Reference
-------------------
-
-### set path key\[=value\] \[key ...\]
-
-Updates a single path with new keys.  Any existing keys that are
-not specified on the command line are left intact.
-
-You will be prompted to enter values for any keys that do not have
-values.  This can be used for more sensitive credentials like
-passwords, PINs, etc.
-
-Example:
-
-```
-vault-manager set secret/root username=root password
-<prompts for 'password' here...>
-```
-
-Similarly, `vault-manager paste` works the same way, but does not have a confirmation
-prompt for your value. It assumes you have pasted in the value from a known-good
-source.
-
-Setting the value of a key to be the contents of a file
-
-Example:
-
-```
-vault-manager set secret/root ssl_key@/path/to/ssl_key_file
-```
-
-### get path \[path ...\]
-
-Retrieve and print the values of one or more paths, to standard
-output.  This is most useful for piping credentials through
-`keybase` or `pgp` for encrypting and sending to others.
-
-```
-vault-manager get secret/root secret/whatever secret/key
---- # secret/root
-username: root
-password: it's a secret
-
---- # secret/whatever
-whatever: is clever
-
---- # secret/key
-private: |
-   -----BEGIN RSA PRIVATE KEY-----
-   ...
-   -----END RSA PRIVATE KEY-----
-public: |
-  -----BEGIN RSA PUBLIC KEY-----
-  ...
-  -----END RSA PRIVATE KEY-----
-```
-
-### tree path \[path ...\]
-
-Provide a tree hierarchy listing of all reachable keys in the
-Vault.
-
-```
-vault-manager tree secret/dc1
-secret/dc1
-  concourse/
-    pipeline-the-first/
-      aws
-      dockerhub
-      github
-    pipeline-the-second/
-      aws
-      dockerhub
-      github
-```
-
-### paths path \[path ... \]
-
-Provide a flat listing of all reachable keys in the Vault.
-
-```
-vault-manager paths secret/dc1
-secret/dc1concourse/pipeline-the-first/aws
-secret/dc1concourse/pipeline-the-first/dockerhub
-secret/dc1concourse/pipeline-the-first/github
-secret/dc1concourse/pipeline-the-second/aws
-secret/dc1concourse/pipeline-the-second/dockerhub
-secret/dc1concourse/pipeline-the-second/github
-```
-
-### delete path \[path ...\]
-
-Removes multiple paths from the Vault.
-
-```
-vault-manager delete secret/unused
-```
-
-### move oldpath newpath
-
-Move a secret from `oldpath` to `newpath`, a rename of sorts.
-
-```
-vault-manager move secret/staging/user secret/prod/user
-```
-
-(or, more succinctly, using brace expansion):
-
-```
-vault-manager move secret/{staging,prod}/user
-```
-
-Any credentials at `newpath` will be completely overwritten.  The
-secret at `oldpath` will no longer exist.
-
-### copy oldpath newpath
-
-Copy a secret from `oldpath` to `newpath`.
-
-```
-vault-manager copy secret/staging/user secret/prod/user
-```
-
-(or, as with `move`, using brace expansion):
-
-```
-save copy secret/{staging,prod}/user
-```
-
-Any credentials at `newpath` will be completely overwritten.  The
-secret at `oldpath` will still exist after the copy.
-
-### gen \[length\] path key
-
-Generate a new, random password.  By default, the generated
-password will be 64 characters long.
-
-```
-vault-manager gen secret/account secretkey
-```
-
-To get a shorter password, only 16 characters long:
-
-```
-vault-manager gen 16 secret/account password
-```
-
-### fmt format_type path oldKey newKey
-
-Take the key at `path:oldKey`, reformat it according to **format_type**,
-and save it in `path:newKey`. Useful for hashing, or encoding passwords
-in an alternate format (for htpass files, or /etc/shadow).
-
-Currently supported formats:
-
-- base64
-- bcrypt
-- crypt-md5
-- crypt-sha256
-- crypt-sha512
-
-```
-vault-manager fmt base64 secret/account password base64_password
-vault-manager fmt crypt-sha512 secret/account password crypt_password
-```
-
-### ssh \[nbits\] path \[path ...\]
-
-Generate a new SSH RSA keypair, adding the keys "private" and
-"public" to each path.  The public key will be encoded as an
-authorized keys.  The private key is a PEM-encoded DER private
-key.
-
-By default, a 2048-bit key will be generated.  The `nbits`
-parameter allows you to change that.
-
-Each path gets a unique SSH keypair.
-
-### rsa \[nbits\] path \[path ...\]
-
-Generate a new RSA keypair, adding the keys "private" and "public"
-to each path.  Both keys will be PEM-encoded DER.
-
-By default, a 2048-bit key will be generated.  The `nbits`
-parameter allows you to change that.
-
-Each path gets a unique RSA keypair.
-
-### prompt ...
-
-Echo the arguments, space-separated, as a single line to the
-terminal.  This is a convenience helper for long pipelines of
-chained commands.
-
-### x509 issue \[OPTIONS\] --name cn.example.com path
-
-Issues a new X.509 TLS/SSL certificate, and stores the new RSA
-private key and the certificate in the Vault at _path_, in PEM
-format.
-
-### x509 revoke \[OPTIONS\] --signed-by path/to/ca path/to/cert
-
-Revoke a certificate that was signed by a Certificate Authority.
-The private key for the CA must be present in the Vault for this
-to work.  Revoked certificates will be appended to the CA's
-certificate revocation list (CRL), stored at `path/to/ca:crl`
-
-### x509 validate \[OPTIONS\] path
-
-Run a variety of validation checks against a certificate in the
-Vault.  In its simplest form, without arguments, this verifies
-that the private key stored at `path:key` matches the certificate
-stored at `path:certificate`.  Options control more powerful
-validations, like checking for revocation, SAN validity, and
-expiry.
-
-### x509 crl --renew path
-
-Renews (re-signs) the certificate authority at `path`, without
-affecting the list of revoked certificates.
-
-### export path \[path ...\]
-
-Export the given subtree(s) in a format suitable for migration
-(via a future `import` call), or long-term storage offline.
-Secrets will not be encrypted in this representation, so care
-should be taken in handling it.  Output will be printed to
-standard output.
-
-### import <export.file
-
-Read an export (as produced by the `export` subcommand) from
-standard input, and write all of the secrets contained
-therein to the same paths inside the targeted Vault.  Trees
-will be imported in an additive nature, so existing credentials
-in the same subtree as imported credentials will be left intact.
-
-If you've got an export saved in a file _on-disk_, you can feed
-it to `vault-manager import` using your shell's redirection facilities:
-
-```
-vault-manager import < ./path/to/export.file
-```
-
-You can also use `cat`, in the standard UNIX idiom:
-
-```
-cat ./path/to/export.file | vault-manager import
-```
-
-(_Note:_ storing exports on-disk is considered bad practice, as
- it leaks your secrets via a shared resource: the filesystem.)
-
-Import and export can be combined in a pipeline to facilitate
-movement of credentials from one Vault to another, like so:
-
-```
-vault-manager -T old-vault export secret/sub/tree | \
-  vault-manager -T new-vault import
-```
-
-### env
-
-Print the environment variables describing the current target:
-
-```
-vault-manager env
-  VAULT_ADDR  http://localhost:8200
-  VAULT_TOKEN  $SOME_UUID
-```
-
-You can also use this command to export a target's configuration into the outer
-shell in order to use the Vault CLI directly:
-
-```
-vault-manager env --bash
-\export VAULT_ADDR=http://localhost:8200;
-\export VAULT_TOKEN=$SOME_UUID;
-\unset VAULT_SKIP_VERIFY;
-
-eval $(vault-manager env --bash)
-```
-
-### sync pull vault-path local-dir
-
-Download secrets from Vault to a local directory as JSON files.  Each secret
-path maps to a corresponding `.json` file:
-
-```
-secret/app/db  →  local-dir/secret/app/db.json
-```
-
-When a local file already exists, `pull` compares its contents against the
-remote value and resolves conflicts interactively:
-
-- **New remote secret** — written to disk automatically (shown with `+`)
-- **Local == remote** — skipped, no action taken
-- **Conflict** — diff is displayed and you are prompted to keep `(l)ocal`,
-  `(r)emote`, or `(s)kip`; in non-TTY mode (e.g. CI pipelines) the remote
-  version is kept automatically
-
-```
-vault-manager sync pull secret/myapp ./secrets
-```
-
-### sync plan vault-path local-dir
-
-Compare local JSON files against the current Vault state and print a
-field-level diff without making any changes.  This is a read-only operation.
-
-Change indicators:
-
-| Symbol | Meaning                                   |
-|--------|-------------------------------------------|
-| `+`    | Secret exists locally but not in Vault    |
-| `~`    | Secret differs between local and Vault    |
-| `-`    | Secret exists in Vault but not locally    |
-
-A summary line is printed at the end:
-
-```
-Plan: 2 to add, 1 to change, 0 to destroy.
-```
-
-Example:
-
-```
-vault-manager sync plan secret/myapp ./secrets
-```
-
-### sync apply vault-path local-dir
-
-Apply local changes to Vault.  Runs the same diff as `plan`, displays it, and
-then prompts for confirmation before writing anything:
-
-```
-Do you want to perform these actions? (y/n)
-```
-
-On confirmation:
-- **Add** — creates secrets that exist locally but not in Vault
-- **Modify** — updates secrets where local and remote values differ
-- **Delete** — removes secrets that exist in Vault but not locally
-
-Nested JSON objects stored as string values in Vault are automatically
-expanded to proper JSON structures in local files (and re-serialised on
-apply), so they remain human-readable on disk.
-
-```
-vault-manager sync apply secret/myapp ./secrets
-```
-
-A summary is printed after a successful run:
-
-```
-Apply complete! 2 added, 1 changed, 0 destroyed.
-```
-
----
-
-Local JSON file format
-----------------------
-
-Each secret is stored as a pretty-printed JSON object.  Simple string values:
-
-```json
-{
-  "username": "admin",
-  "password": "s3cr3t"
-}
-```
-
-String values that contain JSON objects or arrays are automatically expanded
-into nested structures for easier editing:
-
-```json
-{
-  "plain": "simple-string",
-  "config": {
-    "host": "db.example.com",
-    "port": 5432,
-    "ssl": true
-  },
-  "tags": ["web", "api"]
-}
-```
-
-On `apply`, nested objects are re-serialised to compact JSON strings before
-being written to Vault.
-
----
-
-Running with Docker
--------------------
-
-The official image is published at `ghcr.io/someblackmagic/vault-manager`.
-
-The container expects:
-- The configuration file at `/root/.vault-managerrc` (mount from host)
-- An optional working directory for `sync` operations (mount from host)
-
-### One-off command
-
-```bash
-docker run --rm \
-  -v "$HOME/.vault-managerrc:/root/.vault-managerrc:ro" \
-  ghcr.io/someblackmagic/vault-manager \
-  status
-```
-
-### Read a secret
-
-```bash
-docker run --rm \
-  -v "$HOME/.vault-managerrc:/root/.vault-managerrc:ro" \
-  ghcr.io/someblackmagic/vault-manager \
-  get secret/myapp/db
-```
-
-### sync pull — download secrets to a local directory
-
-```bash
-docker run --rm \
-  -v "$HOME/.vault-managerrc:/root/.vault-managerrc:ro" \
-  -v "$(pwd)/secrets:/secrets" \
-  ghcr.io/someblackmagic/vault-manager \
-  sync pull secret/myapp /secrets
-```
-
-After the command completes, `./secrets/` on the host will contain the
-downloaded JSON files.
-
-### sync plan — preview changes
-
-```bash
-docker run --rm \
-  -v "$HOME/.vault-managerrc:/root/.vault-managerrc:ro" \
-  -v "$(pwd)/secrets:/secrets" \
-  ghcr.io/someblackmagic/vault-manager \
-  sync plan secret/myapp /secrets
-```
-
-### sync apply — apply changes to Vault
-
-Because `apply` prompts for confirmation, attach a TTY with `-it`:
-
-```bash
-docker run --rm -it \
-  -v "$HOME/.vault-managerrc:/root/.vault-managerrc:ro" \
-  -v "$(pwd)/secrets:/secrets" \
-  ghcr.io/someblackmagic/vault-manager \
-  sync apply secret/myapp /secrets
-```
-
-To skip the interactive prompt in CI pipelines, pipe `y` to stdin:
-
-```bash
-echo y | docker run --rm -i \
-  -v "$HOME/.vault-managerrc:/root/.vault-managerrc:ro" \
-  -v "$(pwd)/secrets:/secrets" \
-  ghcr.io/someblackmagic/vault-manager \
-  sync apply secret/myapp /secrets
-```
-
-### Using environment variables instead of a config file
-
-If you prefer not to mount a config file you can supply Vault connection
-details via environment variables:
-
-```bash
-docker run --rm -it \
-  -e VAULT_ADDR=https://vault.example.com:8200 \
-  -e VAULT_TOKEN=s.xxxxxxxxxxxxxxxx \
-  -v "$(pwd)/secrets:/secrets" \
-  ghcr.io/someblackmagic/vault-manager \
-  sync apply secret/myapp /secrets
-```
-
-Skipping TLS verification (e.g. self-signed certificates):
-
-```bash
-docker run --rm \
-  -e VAULT_ADDR=https://vault.example.com:8200 \
-  -e VAULT_TOKEN=s.xxxxxxxxxxxxxxxx \
-  -e VAULT_SKIP_VERIFY=true \
-  -v "$(pwd)/secrets:/secrets" \
-  ghcr.io/someblackmagic/vault-manager \
-  sync plan secret/myapp /secrets
-```
-
-### docker-compose example
-
-```yaml
-services:
-  vault-sync:
-    image: ghcr.io/someblackmagic/vault-manager
-    volumes:
-      - ~/.vault-managerrc:/root/.vault-managerrc:ro
-      - ./secrets:/secrets
-    environment:
-      VAULT_ADDR: https://vault.example.com:8200
-    command: sync plan secret/myapp /secrets
-```
-
-Run with:
-
-```bash
-docker compose run --rm vault-sync
-```
+Documentation
+--------------
+
+- [Command Reference](docs/commands.md) — every sub-command, grouped by
+  area (targets & auth, secrets, generation, listing, migration, X.509,
+  admin, sync, ...)
+- [Sync](docs/sync.md) — `sync pull` / `sync plan` / `sync apply` and the
+  local JSON file format
+- [Running with Docker](docs/docker.md) — one-off commands, sync via
+  Docker, environment variables, docker-compose
 
 [vault]:  https://vaultproject.io
 [spruce]: https://github.com/geofffranks/spruce
