@@ -40,7 +40,14 @@ curl -sL https://github.com/SomeBlackMagic/vault-manager/releases/latest/downloa
 sudo mv vault-manager-darwin-arm64 /usr/local/bin/vault-manager
 ```
 
-macOS (Intel) / Linux, using wget:
+Linux (amd64), using wget:
+
+```bash
+wget -qO- https://github.com/SomeBlackMagic/vault-manager/releases/latest/download/vault-manager-linux-amd64.tar.gz | tar xz
+sudo mv vault-manager-linux-amd64 /usr/local/bin/vault-manager
+```
+
+macOS (Intel), using wget:
 
 ```bash
 wget -qO- https://github.com/SomeBlackMagic/vault-manager/releases/latest/download/vault-manager-darwin-amd64.tar.gz | tar xz
