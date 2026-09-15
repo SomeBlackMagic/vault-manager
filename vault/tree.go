@@ -392,7 +392,7 @@ func (t *secretTree) populateNodeType(v *Vault) error {
 		}
 
 		_, err := v.List(t.Name)
-		if err != nil {
+		if err != nil && !IsNotFound(err) {
 			return err
 		}
 		t.Type = treeTypeDir
