@@ -44,8 +44,8 @@ RUN --mount=type=cache,target=/go/pkg/mod \
       -pgo=auto \
       -ldflags "-s -w -buildid= \
                 -extldflags '-static' \
-                -X 'main.version=${VERSION}' \
-                -X 'main.revision=${REVISION}'" \
+                -X 'main.Version=${VERSION}' \
+                -X 'main.Revision=${REVISION}'" \
       .
 
 FROM alpine:edge

@@ -6,48 +6,7 @@ on:
       - 'v*'
 
 jobs:
-  # Wait for Docker workflow to build and push multi-platform images
-  wait-for-docker:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Wait for Docker workflow
-        uses: lewagon/wait-on-check-action@v1.3.4
-        with:
-          ref: ${{ github.ref }}
-          check-name: docker
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-
-  extract-linux-binary:
-    needs: wait-for-docker
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: read
-
-    steps:
-      - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Extract binary from Docker image
-        run: |
-          TAG="${GITHUB_REF_NAME#v}"
-          IMAGE="ghcr.io/someblackmagic/vault-manager:${TAG}"
-          docker create --name extract --platform linux/amd64 "${IMAGE}"
-          docker cp extract:/usr/local/bin/vault-manager vault-manager-linux-amd64
-          docker rm extract
-          tar czf vault-manager-linux-amd64.tar.gz vault-manager-linux-amd64
-
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: vault-manager-linux-amd64
-          path: vault-manager-linux-amd64.tar.gz
-
-  build-native:
+  build:
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -55,6 +14,12 @@ jobs:
     strategy:
       matrix:
         include:
+          - goos: linux
+            goarch: amd64
+            archive: tar.gz
+          - goos: linux
+            goarch: arm64
+            archive: tar.gz
           - goos: darwin
             goarch: amd64
             archive: tar.gz
@@ -65,6 +30,13 @@ jobs:
             goarch: amd64
             archive: zip
             ext: .exe
+          - goos: windows
+            goarch: arm64
+            archive: zip
+            ext: .exe
+          - goos: freebsd
+            goarch: amd64
+            archive: tar.gz
 
     steps:
       - name: Checkout
@@ -77,6 +49,7 @@ jobs:
 
       - name: Build binary
         run: |
+          SOURCE_DATE_EPOCH=0 \
           CGO_ENABLED=0 GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build \
             -v \
             -trimpath \
@@ -106,7 +79,7 @@ jobs:
           path: vault-manager-${{ matrix.goos }}-${{ matrix.goarch }}.*
 
   create-release:
-    needs: [extract-linux-binary, build-native]
+    needs: build
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -117,6 +90,11 @@ jobs:
         with:
           path: artifacts
           merge-multiple: true
+
+      - name: Generate checksums
+        run: |
+          cd artifacts
+          sha256sum * > checksums.txt
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2

@@ -1,12 +1,17 @@
 DESTDIR      ?= /usr/local
 RELEASE_ROOT ?= release
-TARGETS      ?= linux/amd64 darwin/amd64 darwin/arm64 windows/amd64
+TARGETS      ?= linux/amd64 linux/arm64 darwin/amd64 darwin/arm64 windows/amd64 windows/arm64 freebsd/amd64
 
 GIT_REVISION := $(shell git rev-parse --short HEAD 2>/dev/null || echo dev)
-GO_LDFLAGS := -ldflags="-X main.Version=$(VERSION) -X main.Revision=$(GIT_REVISION)"
+GO_LDFLAGS   := -s -w -buildid= -extldflags '-static' \
+                -X 'main.Version=$(VERSION)' -X 'main.Revision=$(GIT_REVISION)'
+GO_BUILD     := SOURCE_DATE_EPOCH=0 CGO_ENABLED=0 go build \
+                -v -trimpath -mod=readonly -buildvcs=false \
+                -tags netgo,osusergo,timetzdata -pgo=auto \
+                -ldflags="$(GO_LDFLAGS)"
 
 build:
-	go build $(GO_LDFLAGS) .
+	$(GO_BUILD) -o vault-manager .
 	./vault-manager -v
 
 unit-test:
@@ -15,10 +20,15 @@ unit-test:
 test: build unit-test
 	./tests
 
-release: build
-	mkdir -p $(RELEASE_ROOT)
-	@go install github.com/mitchellh/gox@latest
-	gox -osarch="$(TARGETS)" --output="$(RELEASE_ROOT)/artifacts/vault-manager-{{.OS}}-{{.Arch}}" $(GO_LDFLAGS)
+release:
+	mkdir -p $(RELEASE_ROOT)/artifacts
+	@for target in $(TARGETS); do \
+		os=$${target%/*}; arch=$${target#*/}; \
+		ext=""; [ "$$os" = "windows" ] && ext=".exe"; \
+		echo "Building $$os/$$arch..."; \
+		GOOS=$$os GOARCH=$$arch $(GO_BUILD) \
+			-o $(RELEASE_ROOT)/artifacts/vault-manager-$$os-$$arch$$ext . || exit 1; \
+	done
 
 install: build
 	mkdir -p $(DESTDIR)/bin
