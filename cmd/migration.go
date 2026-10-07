@@ -51,7 +51,7 @@ of just the specified (or latest if unspecified) version.
 		if len(args) < 1 {
 			r.ExitWithUsage("delete")
 		}
-		v := app.Connect(true)
+		v := app.Connect(true, r.Logger)
 
 		verb := "delete"
 		if opt.Delete.Destroy {
@@ -101,7 +101,7 @@ been irrevocably destroyed. An error also occurs if a key is specified.
 		if len(args) < 1 {
 			r.ExitWithUsage("undelete")
 		}
-		v := app.Connect(true)
+		v := app.Connect(true, r.Logger)
 
 		for _, path := range args {
 			var err error
@@ -149,7 +149,7 @@ redeleting them.
 		if len(args) != 2 {
 			r.ExitWithUsage("revert")
 		}
-		v := app.Connect(true)
+		v := app.Connect(true, r.Logger)
 
 		secret, key, version := vault.ParsePath(args[0])
 		if key != "" {
@@ -247,7 +247,7 @@ backup. Without this, deleted versions will be ignored.
 		if len(args) < 1 {
 			args = append(args, "secret")
 		}
-		v := app.Connect(true)
+		v := app.Connect(true, r.Logger)
 
 		var toExport interface{}
 
@@ -394,7 +394,7 @@ rting garbage data and then destroying it (which is originally done to preserve 
 			r.ExitWithUsage("import")
 		}
 
-		v := app.Connect(true)
+		v := app.Connect(true, r.Logger)
 
 		type importFunc func([]byte) error
 
@@ -536,7 +536,7 @@ and overwrite all versions of the secret at the destination.
 			r.ExitWithUsage("move")
 		}
 
-		v := app.Connect(true)
+		v := app.Connect(true, r.Logger)
 		if vault.PathHasKey(args[0]) || vault.PathHasKey(args[1]) {
 			if opt.Move.Deep {
 				return fmt.Errorf("Cannot deep copy a specific key")
@@ -587,7 +587,7 @@ and overwrite all versions of the secret at the destination.
 		if len(args) != 2 {
 			r.ExitWithUsage("copy")
 		}
-		v := app.Connect(true)
+		v := app.Connect(true, r.Logger)
 
 		if vault.PathHasKey(args[0]) || vault.PathHasKey(args[1]) {
 			if opt.Copy.Deep {

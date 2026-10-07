@@ -2,13 +2,16 @@ package app
 
 import (
 	"crypto/x509"
+	"log/slog"
 	"os"
 
 	fmt "github.com/jhunt/go-ansi"
 	"github.com/SomeBlackMagic/vault-manager/vault"
 )
 
-func Connect(auth bool) *vault.Vault {
+// Connect builds a Vault client for the current target. logger receives
+// diagnostic messages and may be nil.
+func Connect(auth bool, logger *slog.Logger) *vault.Vault {
 	var caCertPool *x509.CertPool
 	if os.Getenv("VAULT_CACERT") != "" {
 		contents, err := os.ReadFile(os.Getenv("VAULT_CACERT"))
@@ -34,6 +37,7 @@ func Connect(auth bool) *vault.Vault {
 		Namespace:  os.Getenv("VAULT_NAMESPACE"),
 		SkipVerify: shouldSkipVerify(),
 		CACerts:    caCertPool,
+		Logger:     logger,
 	}
 
 	if auth && conf.Token == "" {

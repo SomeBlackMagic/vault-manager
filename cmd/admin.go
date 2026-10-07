@@ -40,7 +40,7 @@ The following options are recognized:
 	`,
 	}, func(command string, args ...string) error {
 		cfg := rc.Apply(opt.UseTarget)
-		v := app.Connect(false)
+		v := app.Connect(false, r.Logger)
 
 		type status struct {
 			addr   string
@@ -234,7 +234,7 @@ listener "tcp" {
 		cfg.Write()
 
 		rc.Apply("")
-		v := app.Connect(false)
+		v := app.Connect(false, r.Logger)
 
 		const maxStartupWait = 5 * time.Second
 		const betweenChecksWait = 250 * time.Millisecond
@@ -271,7 +271,7 @@ listener "tcp" {
 		cfg.SetToken(token)
 		os.Setenv("VAULT_TOKEN", token)
 		cfg.Write()
-		v = app.Connect(true)
+		v = app.Connect(true, r.Logger)
 
 		exists, err := v.MountExists("secret")
 		if err != nil {
@@ -368,7 +368,7 @@ Vault will remain sealed).
 		Type: app.AdministrativeCommand,
 	}, func(command string, args ...string) error {
 		cfg := rc.Apply(opt.UseTarget)
-		v := app.Connect(false)
+		v := app.Connect(false, r.Logger)
 
 		if opt.Init.NKeys == 0 {
 			opt.Init.NKeys = 5
@@ -402,7 +402,7 @@ Vault will remain sealed).
 			return err
 		}
 		os.Setenv("VAULT_TOKEN", token)
-		v = app.Connect(true)
+		v = app.Connect(true, r.Logger)
 
 		/* be nice to the machines and machine-like intelligences */
 		if opt.Init.JSON {
@@ -556,7 +556,7 @@ Vault will remain sealed).
 		Type:    app.AdministrativeCommand,
 	}, func(command string, args ...string) error {
 		cfg := rc.Apply(opt.UseTarget)
-		v := app.Connect(false)
+		v := app.Connect(false, r.Logger)
 
 		var addrs []string
 		if cfg.HasStrongbox() {
@@ -624,7 +624,7 @@ Vault will remain sealed).
 		Type:    app.AdministrativeCommand,
 	}, func(command string, args ...string) error {
 		cfg := rc.Apply(opt.UseTarget)
-		v := app.Connect(true)
+		v := app.Connect(true, r.Logger)
 
 		var toSeal []string
 		if cfg.HasStrongbox() {
@@ -768,7 +768,7 @@ secret/vault/seal/keys, as key1, key2, ... keyN.
 			return fmt.Errorf("When specifying more than 1 unseal key, you must also have more than one key required to unseal.")
 		}
 
-		v := app.Connect(true)
+		v := app.Connect(true, r.Logger)
 		keys, err := v.ReKey(unsealKeys, opt.Rekey.Threshold, gpgKeys)
 		if err != nil {
 			return err

@@ -146,7 +146,7 @@ The following options are recognized:
 		}
 
 		rc.Apply(opt.UseTarget)
-		v := app.Connect(true)
+		v := app.Connect(true, r.Logger)
 
 		var ca *vault.X509
 		if opt.X509.Validate.SignedBy != "" {
@@ -296,7 +296,7 @@ The following options are recognized:
 			opt.X509.Issue.Subject = fmt.Sprintf("CN=%s", opt.X509.Issue.Name[0])
 		}
 
-		v := app.Connect(true)
+		v := app.Connect(true, r.Logger)
 		if opt.SkipIfExists {
 			if _, err := v.Read(args[0]); err == nil {
 				if !opt.Quiet {
@@ -447,7 +447,7 @@ The following options are recognized:
 			r.ExitWithUsage("x509 reissue")
 		}
 
-		v := app.Connect(true)
+		v := app.Connect(true, r.Logger)
 
 		/* find the Certificate that we want to renew */
 		s, err := v.Read(args[0])
@@ -620,7 +620,7 @@ The following options are recognized:
 			r.ExitWithUsage("x509 renew")
 		}
 
-		v := app.Connect(true)
+		v := app.Connect(true, r.Logger)
 
 		/* find the Certificate that we want to renew */
 		s, err := v.Read(args[0])
@@ -725,7 +725,7 @@ The following options are recognized:
 		}
 
 		rc.Apply(opt.UseTarget)
-		v := app.Connect(true)
+		v := app.Connect(true, r.Logger)
 
 		/* find the CA */
 		s, err := v.Read(opt.X509.Revoke.SignedBy)
@@ -784,7 +784,7 @@ prints out information about a certificate, including:
 		}
 
 		rc.Apply(opt.UseTarget)
-		v := app.Connect(true)
+		v := app.Connect(true, r.Logger)
 
 		for _, path := range args {
 			s, err := v.Read(args[0])
@@ -984,7 +984,7 @@ Currently, only the --renew option is supported, and it is required:
 		}
 
 		rc.Apply(opt.UseTarget)
-		v := app.Connect(true)
+		v := app.Connect(true, r.Logger)
 
 		s, err := v.Read(args[0])
 		if err != nil {

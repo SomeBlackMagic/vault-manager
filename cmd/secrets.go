@@ -20,7 +20,7 @@ func registerSecretCommands(r *app.Runner, opt *Options) {
 		if len(args) < 2 {
 			r.ExitWithUsage(command)
 		}
-		v := app.Connect(true)
+		v := app.Connect(true, r.Logger)
 		path, args := args[0], args[1:]
 		s, err := v.Read(path)
 		if err != nil && !vault.IsNotFound(err) {
@@ -153,7 +153,7 @@ certificate validation failure, etc. occur, they will be printed as well.
 		if len(args) != 1 {
 			r.ExitWithUsage("exists")
 		}
-		v := app.Connect(true)
+		v := app.Connect(true, r.Logger)
 		_, err := v.Read(args[0])
 		if err != nil {
 			if vault.IsNotFound(err) {
@@ -207,7 +207,7 @@ paths/keys.
 			r.ExitWithUsage("get")
 		}
 
-		v := app.Connect(true)
+		v := app.Connect(true, r.Logger)
 
 		// Recessive case of one path
 		if len(args) == 1 && !opt.Get.Yaml {

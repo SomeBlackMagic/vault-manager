@@ -21,7 +21,7 @@ func registerTreeCommands(r *app.Runner, opt *Options) {
 		Type:    app.NonDestructiveCommand,
 	}, func(command string, args ...string) error {
 		rc.Apply(opt.UseTarget)
-		v := app.Connect(true)
+		v := app.Connect(true, r.Logger)
 
 		if len(args) == 0 {
 			return fmt.Errorf("No paths given")
@@ -91,7 +91,7 @@ func registerTreeCommands(r *app.Runner, opt *Options) {
 `,
 	}, func(command string, args ...string) error {
 		rc.Apply(opt.UseTarget)
-		v := app.Connect(true)
+		v := app.Connect(true, r.Logger)
 		display := func(paths []string) {
 			if opt.List.Single {
 				for _, s := range paths {
@@ -202,7 +202,7 @@ flag does nothing for kv v1 mounts.
 		}
 		r1, _ := regexp.Compile("^ ")
 		r2, _ := regexp.Compile("^└")
-		v := app.Connect(true)
+		v := app.Connect(true, r.Logger)
 		for i, path := range args {
 			secrets, err := v.ConstructSecrets(path, vault.TreeOpts{
 				FetchKeys:           opt.Tree.ShowKeys,
@@ -245,7 +245,7 @@ vaults. This flag does nothing for kv v1 mounts.
 		if len(args) < 1 {
 			args = append(args, "secret")
 		}
-		v := app.Connect(true)
+		v := app.Connect(true, r.Logger)
 		for _, path := range args {
 			secrets, err := v.ConstructSecrets(path, vault.TreeOpts{
 				FetchKeys:           opt.Paths.ShowKeys,

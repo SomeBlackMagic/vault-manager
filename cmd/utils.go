@@ -46,7 +46,7 @@ Supported formats:
 		oldKey := args[2]
 		newKey := args[3]
 
-		v := app.Connect(true)
+		v := app.Connect(true, r.Logger)
 		s, err := v.Read(path)
 		if err != nil {
 			return err
@@ -259,7 +259,7 @@ sent as DATA.
 			data = []byte(strings.Join(args[2:], " "))
 		}
 
-		v := app.Connect(true)
+		v := app.Connect(true, r.Logger)
 		res, err := v.Curl(method, url, data)
 		if err != nil {
 			return err

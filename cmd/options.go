@@ -1,5 +1,7 @@
 package cmd
 
+import "strings"
+
 type Options struct {
 	Insecure     bool `cli:"-k, --insecure"`
 	Version      bool `cli:"-v, --version"`
@@ -7,6 +9,11 @@ type Options struct {
 	Clobber      bool `cli:"--clobber, --no-clobber"`
 	SkipIfExists bool
 	Quiet        bool `cli:"--quiet"`
+
+	// Diagnostic logging, written to stderr. Command-line flags take
+	// precedence over the environment variables.
+	LogLevel  string `cli:"--log-level" env:"VAULT_MANAGER_LOG_LEVEL"`
+	LogFormat string `cli:"--log-format" env:"VAULT_MANAGER_LOG_FORMAT"`
 
 	// Behavour of -T must chain through -- separated commands.  There is code
 	// that relies on this.  Will default to $VAULT_MANAGER_TARGET if it exists, or
@@ -232,4 +239,28 @@ func NewOptions() *Options {
 	opt.Rekey.Persist = true
 	opt.Target.Strongbox = true
 	return opt
+}
+
+// valueFlags are long options that may also be written as --name=value.
+var valueFlags = []string{"--log-level", "--log-format"}
+
+// ExpandFlagAssignments rewrites "--log-level=debug" style arguments into the
+// "--log-level debug" form understood by the command-line parser. Other
+// arguments are returned unchanged.
+func ExpandFlagAssignments(args []string) []string {
+	out := make([]string, 0, len(args))
+	for _, arg := range args {
+		expanded := false
+		for _, name := range valueFlags {
+			if value, ok := strings.CutPrefix(arg, name+"="); ok {
+				out = append(out, name, value)
+				expanded = true
+				break
+			}
+		}
+		if !expanded {
+			out = append(out, arg)
+		}
+	}
+	return out
 }

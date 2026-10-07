@@ -1,13 +1,18 @@
 package app
 
 import (
+	"errors"
 	"fmt"
 	"io"
+	"log/slog"
 	"os"
 	"sort"
 	"strings"
+	"time"
 
 	"github.com/jhunt/go-ansi"
+
+	"github.com/SomeBlackMagic/vault-manager/logging"
 )
 
 // UsageError is a sentinel error type for usage/argument errors.
@@ -44,13 +49,23 @@ type Handler func(command string, args ...string) error
 type Runner struct {
 	Handlers map[string]Handler
 	Topics   map[string]*Help
+
+	// Logger receives diagnostic messages. It is replaced once the global
+	// logging options have been parsed; it never writes to stdout.
+	Logger *slog.Logger
 }
 
 func NewRunner() *Runner {
 	return &Runner{
 		Handlers: make(map[string]Handler),
 		Topics:   make(map[string]*Help),
+		Logger:   logging.Discard(),
 	}
+}
+
+// Log returns the runner's logger, never nil.
+func (r *Runner) Log() *slog.Logger {
+	return logging.OrDiscard(r.Logger)
 }
 
 func (r *Runner) Dispatch(command string, help *Help, fn Handler) {
@@ -129,9 +144,37 @@ func (r *Runner) ExitWithUsage(topic string) {
 	os.Exit(1)
 }
 
+// Execute runs the handler registered for command. Only the command name and
+// the number of arguments are logged: arguments may carry secrets.
 func (r *Runner) Execute(command string, args ...string) error {
-	if fn, ok := r.Handlers[command]; ok {
-		return fn(command, args...)
+	fn, ok := r.Handlers[command]
+	if !ok {
+		return fmt.Errorf("unknown command '%s'", command)
 	}
-	return fmt.Errorf("unknown command '%s'", command)
+
+	log := r.Log().With(logging.KeyCommand, command)
+	log.Debug("command started", "args", len(args))
+	start := time.Now()
+
+	err := fn(command, args...)
+
+	duration := time.Since(start)
+	if err != nil {
+		log.Debug("command failed",
+			"error_type", ErrorType(err),
+			logging.KeyError, err.Error(),
+			logging.KeyDuration, duration)
+		return err
+	}
+	log.Debug("command completed", logging.KeyDuration, duration)
+	return nil
+}
+
+// ErrorType classifies err for diagnostic logs.
+func ErrorType(err error) string {
+	var usageErr *UsageError
+	if errors.As(err, &usageErr) {
+		return "usage"
+	}
+	return "runtime"
 }

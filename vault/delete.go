@@ -5,6 +5,8 @@ import (
 	"strings"
 
 	"github.com/cloudfoundry-community/vaultkv"
+
+	"github.com/SomeBlackMagic/vault-manager/logging"
 )
 
 const (
@@ -153,6 +155,7 @@ func (v *Vault) canSemanticallyDelete(path string) error {
 // If destroy is true and the mount is v2, the latest version is destroyed instead
 func (v *Vault) Delete(path string, opts DeleteOpts) error {
 	path = Canonicalize(path)
+	v.Log().Debug("deleting secret", logging.KeyPath, path, "destroy", opts.Destroy, "all", opts.All)
 
 	reqState := verifyStateAlive
 	if opts.Destroy {

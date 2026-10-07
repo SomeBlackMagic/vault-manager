@@ -42,7 +42,7 @@ The following options are recognized:
 			args = args[1:]
 		}
 
-		v := app.Connect(true)
+		v := app.Connect(true, r.Logger)
 
 		for len(args) > 0 {
 			var path, key string
@@ -100,7 +100,7 @@ The following options are recognized:
 
 		stringuuid := u.String()
 
-		v := app.Connect(true)
+		v := app.Connect(true, r.Logger)
 
 		var path, key string
 		if vault.PathHasKey(args[0]) {
@@ -162,7 +162,7 @@ public key, formatted for use in an SSH authorized_keys file, under 'public'.
 			r.ExitWithUsage("ssh")
 		}
 
-		v := app.Connect(true)
+		v := app.Connect(true, r.Logger)
 		for _, path := range args {
 			s, err := v.Read(path)
 			if err != nil && !vault.IsNotFound(err) {
@@ -209,7 +209,7 @@ be PEM-encoded.
 			r.ExitWithUsage("rsa")
 		}
 
-		v := app.Connect(true)
+		v := app.Connect(true, r.Logger)
 		for _, path := range args {
 			s, err := v.Read(path)
 			if err != nil && !vault.IsNotFound(err) {
@@ -255,7 +255,7 @@ NBITS defaults to 2048.
 		}
 
 		path := args[0]
-		v := app.Connect(true)
+		v := app.Connect(true, r.Logger)
 		s, err := v.Read(path)
 		if err != nil && !vault.IsNotFound(err) {
 			return err
