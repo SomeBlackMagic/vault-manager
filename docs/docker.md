@@ -100,6 +100,27 @@ docker run --rm \
   sync plan secret/myapp /secrets
 ```
 
+### Logging
+
+Pass the logging variables with `-e` to get diagnostic logs on the
+container's stderr:
+
+```bash
+docker run --rm \
+  -v "$HOME/.vault-managerrc:/root/.vault-managerrc:ro" \
+  -v "$(pwd)/secrets:/secrets" \
+  -e VAULT_MANAGER_LOG_LEVEL=debug \
+  -e VAULT_MANAGER_LOG_FORMAT=json \
+  ghcr.io/someblackmagic/vault-manager \
+  sync plan secret/myapp /secrets
+```
+
+`VAULT_MANAGER_LOG_LEVEL` accepts `error`, `warn`, `info` (default),
+`debug` and `trace`; `VAULT_MANAGER_LOG_FORMAT` accepts `text` (default)
+and `json`. The `--log-level` / `--log-format` flags work too and take
+precedence. Don't ship `trace` output to a shared CI log without
+reviewing it: it lists every Vault URL that was requested.
+
 ### docker-compose example
 
 ```yaml
@@ -111,6 +132,8 @@ services:
       - ./secrets:/secrets
     environment:
       VAULT_ADDR: https://vault.example.com:8200
+      VAULT_MANAGER_LOG_LEVEL: info
+      VAULT_MANAGER_LOG_FORMAT: json
     command: sync plan secret/myapp /secrets
 ```
 

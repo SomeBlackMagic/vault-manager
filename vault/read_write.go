@@ -5,6 +5,8 @@ import (
 	"fmt"
 
 	"github.com/cloudfoundry-community/vaultkv"
+
+	"github.com/SomeBlackMagic/vault-manager/logging"
 )
 
 // Read checks the Vault for a Secret at the specified path, and returns it.
@@ -12,6 +14,7 @@ import (
 // error.
 func (v *Vault) Read(path string) (secret *Secret, err error) {
 	path, key, version := ParsePath(path)
+	v.Log().Debug("reading secret", logging.KeyPath, path, "key", key, "version", version)
 
 	secret = NewSecret()
 
@@ -79,6 +82,8 @@ func (v *Vault) Write(path string, s *Secret) error {
 		return v.deleteIfPresent(path, DeleteOpts{})
 	}
 
+	// Only the number of keys is logged, never their values.
+	v.Log().Debug("writing secret", logging.KeyPath, path, logging.KeyCount, len(s.data))
 	_, err := v.client.Set(path, s.data, nil)
 	if vaultkv.IsNotFound(err) {
 		err = NewSecretNotFoundError(path)

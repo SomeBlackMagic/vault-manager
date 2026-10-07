@@ -40,6 +40,17 @@ func registerHelpCommands(r *app.Runner, opt *Options, version string, revision 
 		fmt.Printf(`@G{[SCRIPTING]}
   @B{VAULT_MANAGER_TARGET}    The vault alias which requests are sent to.
 
+@G{[LOGGING]}
+  @B{VAULT_MANAGER_LOG_LEVEL}   Diagnostic log level: error, warn, info (default),
+                            debug or trace. Overridden by --log-level.
+  @B{VAULT_MANAGER_LOG_FORMAT}  Diagnostic log format: text (default) or json.
+                            Overridden by --log-format.
+  @B{DEBUG}                     Deprecated. Enables trace logging when no log
+                            level is set.
+
+  Logs are written to stderr. Secret values, tokens and HTTP bodies are never
+  logged.
+
 @G{[PROXYING]}
   @B{HTTP_PROXY}     The proxy to use for HTTP requests.
   @B{HTTPS_PROXY}    The proxy to use for HTTPS requests.

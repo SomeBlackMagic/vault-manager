@@ -4,6 +4,7 @@ Command Reference
 `vault-manager` operates by way of sub-commands. This page documents every
 command exposed by the CLI, grouped by area.
 
+- [Global Options](#global-options)
 - [Targets & Authentication](#targets--authentication)
 - [Secrets](#secrets)
 - [Generation](#generation)
@@ -13,6 +14,33 @@ command exposed by the CLI, grouped by area.
 - [Admin](#admin)
 - [Formatting & Misc](#formatting--misc)
 - [Sync](#sync)
+
+Global Options
+--------------
+
+These options may be given before or after any command.
+
+| Option                | Environment variable        | Description                                         |
+|-----------------------|-----------------------------|-----------------------------------------------------|
+| `-T, --target ALIAS`  | `VAULT_MANAGER_TARGET`      | Run against the named target instead of the current one |
+| `-k, --insecure`      |                             | Skip TLS certificate verification                   |
+| `--quiet`             |                             | Reduce regular command output                       |
+| `--log-level LEVEL`   | `VAULT_MANAGER_LOG_LEVEL`   | `error`, `warn`, `info` (default), `debug`, `trace` |
+| `--log-format FORMAT` | `VAULT_MANAGER_LOG_FORMAT`  | `text` (default) or `json`                          |
+
+Both `--log-level debug` and `--log-level=debug` are accepted. Flags take
+precedence over the environment variables.
+
+Logs go to stderr and never mix with data on stdout:
+
+```
+vault-manager --log-level=debug export secret/myapp > backup.json
+```
+
+`debug` logs commands and Vault operations (paths and counts only);
+`trace` additionally logs each Vault HTTP request (method, URL, status,
+duration) without tokens or bodies. The deprecated `DEBUG` environment
+variable maps to `trace` when no level is set.
 
 Targets & Authentication
 -------------------------

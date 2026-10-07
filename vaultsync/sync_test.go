@@ -8,6 +8,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
+	"github.com/SomeBlackMagic/vault-manager/logging"
 	"github.com/SomeBlackMagic/vault-manager/vault"
 	"github.com/SomeBlackMagic/vault-manager/vaultsync"
 )
@@ -433,7 +434,7 @@ var _ = Describe("Plan", func() {
 		err = vaultsync.WriteLocalSecret(tmpDir, "secret/new", map[string]interface{}{"newkey": "newval"})
 		Expect(err).ToNot(HaveOccurred())
 
-		cs, err := vaultsync.Plan(mv, "secret", tmpDir)
+		cs, err := vaultsync.Plan(logging.Discard(), mv, "secret", tmpDir)
 		Expect(err).ToNot(HaveOccurred())
 		Expect(cs.HasChanges()).To(BeTrue())
 
@@ -464,7 +465,7 @@ var _ = Describe("Apply", func() {
 		// Note: Apply prompts for confirmation via stdin.
 		// In a real test environment, we'd pipe "y\n" to stdin.
 		// For now, this test verifies the Plan part works.
-		cs, err := vaultsync.Plan(mv, "secret", tmpDir)
+		cs, err := vaultsync.Plan(logging.Discard(), mv, "secret", tmpDir)
 		Expect(err).ToNot(HaveOccurred())
 
 		adds, modifies, deletes := cs.Counts()

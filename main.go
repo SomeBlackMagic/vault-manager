@@ -9,6 +9,7 @@ import (
 	env "github.com/jhunt/go-envirotron"
 	"github.com/SomeBlackMagic/vault-manager/app"
 	"github.com/SomeBlackMagic/vault-manager/cmd"
+	"github.com/SomeBlackMagic/vault-manager/logging"
 	"github.com/SomeBlackMagic/vault-manager/rc"
 )
 
@@ -28,7 +29,7 @@ func main() {
 	cmd.RegisterAll(r, opt, Version, Revision)
 
 	env.Override(opt)
-	p, err := cli.NewParser(opt, os.Args[1:])
+	p, err := cli.NewParser(opt, cmd.ExpandFlagAssignments(os.Args[1:]))
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "@R{!! %s}\n", err)
 		os.Exit(1)
@@ -56,6 +57,15 @@ func main() {
 			return
 		}
 
+		// Global options are re-parsed for every chained command, so the
+		// logger is rebuilt each time as well.
+		logger, err := logging.Setup(opt.LogLevel, opt.LogFormat, os.Getenv("DEBUG"), os.Stderr)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "@Y{%s}\n", err)
+			os.Exit(1)
+		}
+		r.Logger = logger
+
 		if opt.Help { // -h or --help was given after a command
 			r.Execute("help", p.Command)
 			continue
@@ -77,6 +87,7 @@ func main() {
 			} else {
 				fmt.Fprintf(os.Stderr, "@R{!! %s}\n", err)
 			}
+			r.Log().Debug("exiting", logging.KeyCommand, p.Command, "exit_code", 1)
 			os.Exit(1)
 		}
 	}

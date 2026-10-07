@@ -197,6 +197,45 @@ vault-manager fmt crypt-sha512 secret/account password crypt_pass
 vault-manager get secret/account
 ```
 
+Logging
+-------
+
+Diagnostic logs are written to **stderr**, separately from command output,
+so results meant for scripts (`get`, `export`, `--json`, ...) stay clean on
+stdout. Diffs, prompts and summaries printed by commands are not logs and
+are not affected by these settings; `--quiet` still controls them.
+
+| Flag           | Environment variable        | Values                                      | Default |
+|----------------|-----------------------------|---------------------------------------------|---------|
+| `--log-level`  | `VAULT_MANAGER_LOG_LEVEL`   | `error`, `warn`, `info`, `debug`, `trace`   | `info`  |
+| `--log-format` | `VAULT_MANAGER_LOG_FORMAT`  | `text`, `json`                              | `text`  |
+
+Flags take precedence over environment variables. An unknown level or
+format is reported as a usage error.
+
+- `debug` shows command lifecycle and high-level operations (paths and
+  counts, never secret values).
+- `trace` adds one line per Vault HTTP request: method, URL (with sensitive
+  query parameters masked), status and duration. Tokens, headers and
+  request/response bodies are never logged.
+
+```
+vault-manager --log-level=debug sync plan secret/myapp ./secrets
+VAULT_MANAGER_LOG_LEVEL=trace vault-manager sync pull secret/myapp ./secrets
+vault-manager --log-format=json --log-level=info sync plan secret/myapp ./secrets
+```
+
+From a source checkout, `make sync-plan VAULT_PATH=secret/myapp
+LOCAL_DIR=./secrets LOG_LEVEL=debug` does the same (also `sync-pull` and
+`sync-apply`; `LOG_FORMAT=json` is supported).
+
+> **Note:** `trace` and `debug` output contains Vault URLs and secret
+> paths. Review it before attaching it to a shared CI log.
+
+The old `DEBUG` environment variable still works but is deprecated: when no
+log level is set it enables `trace` and prints a warning. It no longer
+dumps raw HTTP requests and responses.
+
 Documentation
 --------------
 

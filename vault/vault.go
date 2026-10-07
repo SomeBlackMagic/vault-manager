@@ -7,18 +7,20 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 	"net/url"
-	"os"
 	"runtime"
 	"strings"
 
 	"github.com/cloudfoundry-community/vaultkv"
+
+	"github.com/SomeBlackMagic/vault-manager/logging"
 )
 
 type Vault struct {
 	client *vaultkv.KV
-	debug  bool
+	log    *slog.Logger
 }
 
 type VaultConfig struct {
@@ -27,6 +29,8 @@ type VaultConfig struct {
 	Namespace  string
 	CACerts    *x509.CertPool
 	SkipVerify bool
+	// Logger receives diagnostic messages; nil disables logging.
+	Logger *slog.Logger
 }
 
 // NewVault creates a new Vault object.  If an empty token is specified,
@@ -63,30 +67,35 @@ func NewVault(conf VaultConfig) (*Vault, error) {
 		return nil, fmt.Errorf("Error setting up proxy: %w", err)
 	}
 
+	log := logging.OrDiscard(conf.Logger)
+	log.Debug("vault client configured",
+		"url", RedactURL(vaultURL),
+		"namespace", conf.Namespace,
+		"skip_verify", conf.SkipVerify)
+
 	return &Vault{
 		client: (&vaultkv.Client{
 			VaultURL:  vaultURL,
 			AuthToken: conf.Token,
 			Namespace: conf.Namespace,
 			Client: &http.Client{
-				Transport: &http.Transport{
+				Transport: newTracingTransport(&http.Transport{
 					Proxy: proxyRouter.Proxy,
 					TLSClientConfig: &tls.Config{
 						RootCAs:            conf.CACerts,
 						InsecureSkipVerify: conf.SkipVerify,
 					},
 					MaxIdleConnsPerHost: 100,
-				},
+				}, log),
 			},
-			Trace: func() (ret io.Writer) {
-				if shouldDebug() {
-					ret = os.Stderr
-				}
-				return ret
-			}(),
 		}).NewKV(),
-		debug: shouldDebug(),
+		log: log,
 	}, nil
+}
+
+// Log returns the logger used by this Vault client, never nil.
+func (v *Vault) Log() *slog.Logger {
+	return logging.OrDiscard(v.log)
 }
 
 func (v *Vault) Client() *vaultkv.KV {
@@ -106,11 +115,6 @@ func (v *Vault) Versions(path string) ([]vaultkv.KVVersion, error) {
 	}
 
 	return ret, err
-}
-
-func shouldDebug() bool {
-	d := strings.ToLower(os.Getenv("DEBUG"))
-	return d != "" && d != "false" && d != "0" && d != "no" && d != "off"
 }
 
 func (v *Vault) Curl(method string, path string, body []byte) (*http.Response, error) {

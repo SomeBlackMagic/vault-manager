@@ -60,8 +60,8 @@ Conflict handling:
 		if len(args) != 2 {
 			r.ExitWithUsage("sync pull")
 		}
-		v := app.Connect(true)
-		return vaultsync.Pull(v, args[0], args[1])
+		v := app.Connect(true, r.Logger)
+		return vaultsync.Pull(r.Logger, v, args[0], args[1])
 	})
 
 	r.Dispatch("sync plan", &app.Help{
@@ -89,8 +89,8 @@ objects display granular field changes instead of the full blob.
 		if len(args) != 2 {
 			r.ExitWithUsage("sync plan")
 		}
-		v := app.Connect(true)
-		_, err := vaultsync.Plan(v, args[0], args[1])
+		v := app.Connect(true, r.Logger)
+		_, err := vaultsync.Plan(r.Logger, v, args[0], args[1])
 		return err
 	})
 
@@ -115,8 +115,8 @@ strings before writing, so Vault always receives flat key-value pairs.
 		if len(args) != 2 {
 			r.ExitWithUsage("sync apply")
 		}
-		v := app.Connect(true)
-		return vaultsync.Apply(v, args[0], args[1])
+		v := app.Connect(true, r.Logger)
+		return vaultsync.Apply(r.Logger, v, args[0], args[1])
 	})
 
 }

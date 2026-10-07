@@ -14,6 +14,21 @@ const (
 	ChangeDelete                   // Vault only → delete from Vault
 )
 
+// String returns a stable lowercase name for use in logs.
+func (t ChangeType) String() string {
+	switch t {
+	case ChangeNone:
+		return "none"
+	case ChangeAdd:
+		return "add"
+	case ChangeModify:
+		return "modify"
+	case ChangeDelete:
+		return "delete"
+	}
+	return "unknown"
+}
+
 // Change represents a single difference between local and remote state.
 type Change struct {
 	Type       ChangeType

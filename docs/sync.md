@@ -12,6 +12,7 @@ managing secrets under version control / GitOps-style workflows.
 - [sync plan](#sync-plan-vault-path-local-dir)
 - [sync apply](#sync-apply-vault-path-local-dir)
 - [Local JSON file format](#local-json-file-format)
+- [Diagnostics](#diagnostics)
 
 ### sync pull vault-path local-dir
 
@@ -119,3 +120,43 @@ expanded into nested structures for easier editing:
 
 On `apply`, nested objects are re-serialised to compact JSON strings before
 being written to Vault.
+
+Diagnostics
+-----------
+
+By default `sync` prints only its regular output (diffs, prompts and the
+summary). To see what it is doing, raise the log level; logs are written to
+stderr:
+
+```
+vault-manager --log-level=debug sync plan secret/myapp ./secrets
+```
+
+```
+level=DEBUG msg="sync plan started" vault_path=secret/myapp local_dir=./secrets
+level=DEBUG msg="reading local state" local_dir=./secrets
+level=DEBUG msg="read local secrets" count=3
+level=DEBUG msg="fetching remote secrets" vault_path=secret/myapp
+level=DEBUG msg="fetched remote secrets" count=3
+level=DEBUG msg="compared secret" path=secret/myapp/db change=modify
+level=DEBUG msg="sync plan completed" adds=1 changes=1 deletes=0 duration=12.4ms
+```
+
+`trace` adds a line for every Vault HTTP request, which helps with TLS,
+proxy and permission problems:
+
+```
+VAULT_MANAGER_LOG_LEVEL=trace vault-manager sync pull secret/myapp ./secrets
+```
+
+For CI and log collectors, use JSON:
+
+```
+vault-manager --log-format=json --log-level=debug sync plan secret/myapp ./secrets
+```
+
+Logs contain secret **paths** and counts, never secret values, tokens or
+request bodies. Note that the diff printed by `plan`/`apply`/`pull` is
+regular output and does show values; that is unchanged by the log level.
+Even so, avoid publishing `debug`/`trace` output in shared CI logs without
+reviewing it first.

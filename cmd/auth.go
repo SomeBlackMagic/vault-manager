@@ -38,7 +38,7 @@ Flags:
 		Type: app.AdministrativeCommand,
 	}, func(command string, args ...string) error {
 		cfg := rc.Apply(opt.UseTarget)
-		v := app.Connect(false)
+		v := app.Connect(false, r.Logger)
 		v.Client().Client.SetAuthToken("")
 
 		method := "token"
@@ -118,7 +118,7 @@ Flags:
 			token = result.ClientToken
 
 		case "status":
-			v := app.Connect(false)
+			v := app.Connect(false, r.Logger)
 			tokenInfo, err := v.Client().Client.TokenInfoSelf()
 			var tokenObj app.TokenStatus
 			if err != nil {
@@ -201,7 +201,7 @@ Flags:
 					continue
 				}
 				fmt.Printf("renewing token against @C{%s}...\n", vault)
-				v := app.Connect(true)
+				v := app.Connect(true, r.Logger)
 				if err := v.RenewLease(); err != nil {
 					fmt.Fprintf(os.Stderr, "@R{failed to renew token against %s: %s}\n", vault, err)
 					failed++
@@ -214,7 +214,7 @@ Flags:
 		}
 
 		rc.Apply(opt.UseTarget)
-		v := app.Connect(true)
+		v := app.Connect(true, r.Logger)
 		if err := v.RenewLease(); err != nil {
 			return err
 		}
